@@ -13,5 +13,5 @@ job:
 script: |
   #!/bin/bash
   #printenv
-  echo '{ \"expid\":\"exp123\",\"jobid\":'$SLURM_JOB_ID'}'
+  echo expid:exp123,jobid:$SLURM_JOB_ID
   python3 -u main.py --operator=tf --sleep=300 --tb-write=True
