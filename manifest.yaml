@@ -1,3 +1,4 @@
+kind: AIchorManifest
 job:
   #name: job_name
   ntasks: 2
