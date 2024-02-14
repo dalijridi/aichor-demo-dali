@@ -16,6 +16,7 @@
 #scontrol show job $SLURM_JOB_ID 
 # echo -e "---------------------------------\n"
 
+export HOME=/home/ec2-user
 # Due to a potential bug, we need to manually load our bash configurations first
 source $HOME/.bashrc
 
