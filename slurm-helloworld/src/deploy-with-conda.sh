@@ -21,19 +21,19 @@ export HOME=/home/ec2-user
 source $HOME/.bashrc
 
 # install mini-conda
-#curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh -u
+#curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh 
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-bash ~/miniconda.sh -b -p $HOME/miniconda
+bash ~/miniconda.sh -u -b -p $HOME/miniconda
 source ~/miniconda/bin/activate
 conda init bash
 
 #create myenv
 source $HOME/.bashrc
-conda create -y -n myenv 
+conda create -y -n myenv
+pip install numpy torchvision  ipdb
 
 # Next activate the conda environment 
 conda activate myenv
-pip install numpy torch ipdb
 
 # Run our code --use-gpu
 echo "-------- PYTHON OUTPUT ----------" 
