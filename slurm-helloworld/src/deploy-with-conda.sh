@@ -30,7 +30,9 @@ conda init bash
 #create myenv
 source $HOME/.bashrc
 conda create -y -n myenv
-pip install numpy torchvision  ipdb
+conda install -y pytorch -c pytorch
+conda install -y numpy
+pip install ipdb
 
 # Next activate the conda environment 
 conda activate myenv
