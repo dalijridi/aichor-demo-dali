@@ -1,6 +1,6 @@
 kind: AIchorManifest
 job:
-  ntasks: 2
+  ntasks: a
   nodes: 2
   standard_input: "/dev/null"
   standard_output: "/home/ec2-user/outputs/output-%j.out"
