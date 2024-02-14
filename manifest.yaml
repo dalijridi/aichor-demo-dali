@@ -12,5 +12,4 @@ script: |
   #!/bin/bash
   #printenv
   echo expid:exp123,jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
-  #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
-  exit -1
+  python3 -u main.py --operator=tf --sleep=300 --tb-write=True
