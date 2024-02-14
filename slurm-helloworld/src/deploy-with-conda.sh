@@ -30,12 +30,11 @@ conda init bash
 #create myenv
 source $HOME/.bashrc
 conda create -y -n myenv
-conda install -y pytorch -c pytorch
-conda install -y numpy
 pip install ipdb
 
 # Next activate the conda environment 
 conda activate myenv
+conda install -y pytorch numpy
 
 # Run our code --use-gpu
 echo "-------- PYTHON OUTPUT ----------" 
