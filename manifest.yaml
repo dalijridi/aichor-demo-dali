@@ -1,11 +1,7 @@
 kind: AIchorManifest
 job:
-  ntasks: 1
-  nodes: 1
-  #partition: "gpu"
-  #gres: "gpu:1"
-  #cpus_per_task: 1
-  #memory_per_cpu: 1G
+  ntasks: 2
+  nodes: 2
   standard_input: "/dev/null"
   standard_output: "/home/ec2-user/outputs/output-%j.out"
   standard_error: "/home/ec2-user/outputs/output_error-%j.out"
@@ -13,10 +9,9 @@ job:
     PATH: "/bin:/usr/bin/:/usr/local/bin/:/opt/slurm/bin"
     LD_LIBRARY_PATH: "/lib/:/lib64/:/usr/local/lib"
 script: |
-
   #!/bin/bash  
   #printenv
-  echo jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
+  echo expid:exp123,jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
   cd slurm-helloworld/src
   ./deploy-with-conda.sh
