@@ -2,7 +2,7 @@ kind: AIchorManifest
 spec:
  types:
   job:
-   ntasks: 2
+   ntasks: 1
    nodes: 1
    standard_input: "/dev/null"
    standard_output: "/home/ec2-user/outputs/output-%j.out"
