@@ -20,6 +20,6 @@ spec:
   #aws sns publish --topic-arn "arn:aws:sns:eu-west-3:719473856879:slurm-job-completion" --message "Job status : $state"
   curl -X POST -k -H 'content-type: application/json' -d "{\"status\": \"$SLURM_JOB_ID STARTED\"}" 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
   #strigger --set -j $SLURM_JOB_ID --fini --program="curl -X POST -k -H 'content-type: application/json' -d '"{\"status\": \"$SLURM_JOB_ID FINISHED\"}"' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'"
-  strigger --set -j $SLURM_JOB_ID --fini --program='echo $SLURM_JOB_ID FINISHED'
+  strigger --set -j $SLURM_JOB_ID --fini --program='/bin/echo $SLURM_JOB_ID FINISHED'
   echo "STRIGGER COMPLETED"
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
