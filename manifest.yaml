@@ -16,10 +16,11 @@ spec:
   #!/bin/bash
   #printenv
   echo expid:exp123,jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
-  #state=$(sacct -j $SLURM_JOB_ID | awk 'NR==3 {print $6; exit}')
-  #aws sns publish --topic-arn "arn:aws:sns:eu-west-3:719473856879:slurm-job-completion" --message "Job status : $state"
   curl -X POST -k -H 'content-type: application/json' -d '{"status": "'"$SLURM_JOB_ID"' STARTED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
   #strigger --set -j $SLURM_JOB_ID --fini --program="curl -X POST -k -H 'content-type: application/json' -d '"{\"status\": \"$SLURM_JOB_ID FINISHED\"}"' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'"
+  cat <<EOF > /mnt/shared/strigger_script_new
+  echo "Test : " $SLURM_JOB_ID
+  EOF
   sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger_script --flags=PERM'
   echo "-------STRIGGER COMPLETED--------"
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
