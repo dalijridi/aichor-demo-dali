@@ -21,8 +21,8 @@ spec:
   cat <<EOF > /mnt/shared/strigger
   curl -X POST -k -H 'content-type: application/json' -d '{"message": "'"$SLURM_JOB_ID"' FINISHED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
   EOF
-  sudo chown slurm:slurm /mnt/shared/strigger
-  sudo chmod +x /mnt/shared/strigger
-  sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger --flags=PERM'
+  sudo chown slurm:slurm /mnt/shared/strigger_$SLURM_JOB_ID
+  sudo chmod +x /mnt/shared/strigger_$SLURM_JOB_ID
+  sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger_$SLURM_JOB_ID --flags=PERM'
   echo "-------STRIGGER COMPLETED--------"
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
