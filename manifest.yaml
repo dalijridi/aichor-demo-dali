@@ -24,4 +24,5 @@ spec:
   sudo -u slurm chmod +x /mnt/shared/strigger_$SLURM_JOB_ID
   sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger_'"$SLURM_JOB_ID"' --flags=PERM'
   echo "-------STRIGGER COMPLETED--------"
+  sudo -u slurm rm /mnt/shared/strigger_$SLURM_JOB_ID
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
