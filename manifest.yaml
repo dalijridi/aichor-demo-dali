@@ -19,9 +19,9 @@ spec:
   curl -X POST -k -H 'content-type: application/json' -d '{"status": "'"$SLURM_JOB_ID"' STARTED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
   sudo -u slurm touch /mnt/shared/strigger
   sudo -u slurm chmod +x /mnt/shared/strigger
-  sudo -u slurm bash -c "cat <<EOF > /mnt/shared/strigger
-  curl -X POST -k -H 'content-type: application/json' -d '{"message": "'"$SLURM_JOB_ID"' FINISHED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
-  EOF"
+  sudo -u slurm bash -c 'cat <<EOF > /mnt/shared/strigger
+  curl -X POST -k -H "content-type: application/json" -d "{\"message\": \"$SLURM_JOB_ID FINISHED\"}" "https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/"
+  EOF'
   #sudo chown slurm:slurm /mnt/shared/strigger_$SLURM_JOB_ID
   #sudo chmod +x /mnt/shared/strigger_$SLURM_JOB_ID
   sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger --flags=PERM'
