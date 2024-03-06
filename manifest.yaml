@@ -17,7 +17,7 @@ spec:
   #printenv
   echo expid:exp123,jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
   curl -X POST -k -H 'content-type: application/json' -d '{"status": "'"$SLURM_JOB_ID"' STARTED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
-  sudo -u slurm touch strigger
+  sudo -u slurm touch /mnt/shared/strigger
   sudo chmod +x /mnt/shared/strigger
   cat <<EOF > /mnt/shared/strigger
   curl -X POST -k -H 'content-type: application/json' -d '{"message": "'"$SLURM_JOB_ID"' FINISHED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
