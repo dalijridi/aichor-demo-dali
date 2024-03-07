@@ -6,12 +6,6 @@ spec:
    nodes: 1
    cpus_per_task: 1
    memory_per_cpu: 1G
-   standard_input: "/dev/null"
-   standard_output: "/home/ec2-user/outputs/%j.out"
-   standard_error: "/home/ec2-user/outputs/%j-error.out"
-   environment:
-    PATH: "/bin:/usr/bin/:/usr/local/bin/:/opt/slurm/bin"
-    LD_LIBRARY_PATH: "/lib/:/lib64/:/usr/local/lib"
  command: |
   #!/bin/bash
   #printenv
