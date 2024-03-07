@@ -9,14 +9,4 @@ spec:
  command: |
   #!/bin/bash
   #printenv
-  echo expid:exp123,jobid:$SLURM_JOB_ID,node:$SLURMD_NODENAME
-  curl -X POST -k -H 'content-type: application/json' -d '{"status": "'"$SLURM_JOB_ID"' STARTED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
-  cat <<EOF > /mnt/shared/strigger_$SLURM_JOB_ID
-  curl -X POST -k -H 'content-type: application/json' -d '{"message": "'"$SLURM_JOB_ID"' FINISHED"}' 'https://2wrdeowf5zsted45pq5o6zloii0dkmbf.lambda-url.eu-west-3.on.aws/'
-  EOF
-  sudo chown slurm:slurm /mnt/shared/strigger_$SLURM_JOB_ID
-  sudo -u slurm chmod +x /mnt/shared/strigger_$SLURM_JOB_ID
-  sudo -u slurm bash -c '/opt/slurm/bin/strigger --set -j '"$SLURM_JOB_ID"' --fini --program=/mnt/shared/strigger_'"$SLURM_JOB_ID"' --flags=PERM'
-  echo "-------STRIGGER COMPLETED--------"
-  sudo rm /mnt/shared/strigger_$SLURM_JOB_ID
   #python3 -u main.py --operator=tf --sleep=300 --tb-write=True
