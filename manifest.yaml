@@ -1,5 +1,6 @@
 kind: AIchorManifest
 spec:
+ operator: slurm
  types:
   job:
    ntasks: 1
