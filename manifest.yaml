@@ -1,8 +1,12 @@
 kind: AIchorManifest
-job:
-  ntasks: 1
-  nodes: 1
-command: |
+spec:
+ types:
+  job:
+   ntasks: 1
+   nodes: 1
+   cpus_per_task: 1
+   memory_per_cpu: 1G
+ command: |
   #!/bin/bash
   cd slurm-helloworld/src
   ./deploy-with-conda.sh
