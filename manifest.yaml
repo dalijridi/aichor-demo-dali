@@ -6,4 +6,5 @@ spec:
    nodes: 1
    cpus_per_task: 1
    memory_per_cpu: 1G
- command: "python3 -u main.py --operator=tf --sleep=300 --tb-write=True"
+ command: "#!/bin/bash
+  #python3 -u main.py --operator=tf --sleep=300 --tb-write=True"
