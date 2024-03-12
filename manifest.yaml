@@ -1,7 +1,8 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: "#!/bin/bash
+ command: "|
+  #!/bin/bash
   cd slurm-helloworld/src
   ./deploy-with-conda.sh"
  types:
