@@ -1,10 +1,10 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: "|
+ command: |
   #!/bin/bash
   cd slurm-helloworld/src
-  ./deploy-with-conda.sh"
+  ./deploy-with-conda.sh
  types:
   job:
    ntasks: 1
