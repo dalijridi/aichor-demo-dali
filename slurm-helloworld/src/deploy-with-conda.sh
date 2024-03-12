@@ -38,7 +38,7 @@ conda install -y pytorch numpy
 
 # Run our code --no-gpu
 echo "-------- PYTHON OUTPUT ----------" 
-python3 multiply.py --timer_repetitions 10000 --no-gpu
+python3 slurm-helloworld/src/multiply.py --timer_repetitions 10000 --no-gpu
 echo "---------------------------------"
 
 # Deactivate environment again
