@@ -4,7 +4,7 @@ spec:
  command: ./slurm-helloworld/src/deploy-with-conda.sh
  types:
   job:
-   ntasks: 1
-   nodes: 1
+   ntasks: 2
+   nodes: 2
    cpus_per_task: 1
    memory_per_cpu: 1G
