@@ -1,5 +1,4 @@
 kind: AIchorManifest
-
 spec:
  types:
   job:
@@ -7,4 +6,4 @@ spec:
    nodes: 1
    cpus_per_task: 1
    memory_per_cpu: 1G
- command: python3 -u main.py --operator=tf --tb-write=True
+ command: python3 -u main.py --operator=tf --sleep=300 --tb-write=True
