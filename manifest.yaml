@@ -1,5 +1,4 @@
 kind: AIchorManifest
-
 spec:
  operator: slurm
  command: ./slurm-helloworld/src/deploy-with-conda.sh
