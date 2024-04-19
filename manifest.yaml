@@ -1,5 +1,4 @@
 kind: AIchorManifest
-
 spec:
  types:
   job:
