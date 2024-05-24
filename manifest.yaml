@@ -2,7 +2,7 @@ kind: AIchorManifest
 spec:
  operator: slurm
  #command: ./slurm-helloworld/src/deploy-with-conda.sh
- command: ./bnt-demo./cpu_load.py
+ command: python3 ./bnt-demo./cpu_load.py
  types:
   job:
    ntasks: 1
