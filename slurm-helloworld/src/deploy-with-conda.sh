@@ -16,14 +16,15 @@
 #scontrol show job $SLURM_JOB_ID 
 # echo -e "---------------------------------\n"
 
-export HOME=/home/slurm
+#export HOME=/home/slurm
+export HOME=/mnt/shared
 # Due to a potential bug, we need to manually load our bash configurations first
 source $HOME/.bashrc
 
 # install mini-conda
 #curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh 
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-bash ~/miniconda.sh -u -b -p $HOME/miniconda
+#wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+bash /mnt/shared/miniconda/miniconda.sh -u -b -p $HOME/miniconda
 source ~/miniconda/bin/activate
 conda init bash
 
