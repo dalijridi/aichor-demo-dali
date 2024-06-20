@@ -1,6 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
+ 
  #command: ./slurm-helloworld/src/deploy-with-conda.sh
  #command: python3 ./bnt-demo./cpu_load.py
  command: echo $PROJECT_ID
