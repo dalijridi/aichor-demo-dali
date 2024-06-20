@@ -3,7 +3,7 @@ spec:
  operator: slurm 
  #command: ./slurm-helloworld/src/deploy-with-conda.sh
  #command: python3 ./bnt-demo./cpu_load.py
- command: echo $PROJECT_ID $EXPERIMENT_ID $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
   job:
    ntasks: 2
