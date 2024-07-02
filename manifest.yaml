@@ -1,7 +1,6 @@
 kind: AIchorManifest
 spec:
- operator: slurm 
- #command: ./slurm-helloworld/src/deploy-with-conda.sh
+ operator: slurm
  #command: python3 ./bnt-demo./cpu_load.py
  command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
