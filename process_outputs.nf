@@ -6,7 +6,7 @@ process my-first-process {
 
   script:
   '''
-  echo Hello world from Aichor > aichor-foo.txt
+  echo Hello world from AIchor > aichor-foo.txt
   '''
 }
 
