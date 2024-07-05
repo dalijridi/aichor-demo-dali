@@ -1,6 +1,6 @@
 kind: AIchorManifest
 spec:
- operator: slurm
+ operator: slurm 
  #command: python3 ./bnt-demo./cpu_load.py
  #command: module load Java && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  command: export PATH=/mnt/shared:/home/shared/apps/software/Java/17.0.6:/home/shared/apps/software/Java/17.0.6/bin:/home/shared/apps/lmod/lmod/8.4/libexec:/opt/amazon/openmpi/bin:/opt/amazon/efa/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/aws/bin:/opt/parallelcluster/pyenv/versions/3.7.16/envs/cfn_bootstrap_virtualenv/bin:/opt/parallelcluster/pyenv/versions/3.9.16/envs/awsbatch_virtualenv/bin:/opt/slurm/bin && export LD_LIBRARY_PATH=/lib/:/lib64/:/usr/local/lib && export LD_LIBRARY_PATH=/lib/:/lib64/:/usr/local/lib && export MODULEPATH=/home/shared/apps/modules/all && export LMOD_CMD=/home/shared/apps/lmod/lmod/8.4/libexec/lmod && export NXF_HOME=/mnt/shared/workflow_aichor_nexttest && source /home/shared/apps/lmod/lmod/8.4/init/profile && source /home/shared/apps/lmod/lmod/8.4/init/bash && module load Java && nextflow run process_outputs.nf
