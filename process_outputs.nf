@@ -1,24 +1,24 @@
 #!/usr/bin/env nextflow
 
-process my-first-process {
+process firstProcess {
   output:
-  path 'aichor-foo.txt', optional: true
+  path 'aichorfoo.txt', optional: true
 
   script:
   '''
-  echo Hello world from AIchor > aichor-foo.txt
+  echo Hello world from AIchor > aichorfoo.txt
   '''
 }
 
-process my-second-process {
+process secondProcess {
   input:
   path '*'
   script:
   '''
-  cat aichor-foo.txt
+  cat aichorfoo.txt
   '''
 }
 
 workflow {
-  my-first-process | my-second-process
+  firstProcess | secondProcess
 }
