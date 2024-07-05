@@ -1,5 +1,5 @@
 kind: AIchorManifest
-spec:  
+spec:
  operator: slurm
  #command: python3 ./bnt-demo./cpu_load.py
  #command: module load Java && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
