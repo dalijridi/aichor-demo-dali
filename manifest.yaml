@@ -3,8 +3,8 @@ spec:
  operator: slurm 
  #command: python3 ./bnt-demo./cpu_load.py
  #command: module load Java && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
- command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
- #command: echo $JAVA_HOME && echo $MODULEPATH && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ #command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ command: nextflow run process_outputs.nf -with-report s3://aichor-demo-dali-outputs/outputs/123/nextflow
  types:
   job:
    ntasks: 2
