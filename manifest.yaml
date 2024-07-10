@@ -3,7 +3,8 @@ spec:
  operator: slurm 
  #command: python3 ./bnt-demo./cpu_load.py
  #command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
- command: echo $JAVA_HOME > /mnt/shared/java_home.txt && nextflow run process_outputs.nf
+ #command: echo $JAVA_HOME > /mnt/shared/java_home.txt && nextflow run process_outputs.nf
+ command: printenv > /mnt/shared/env-vars.txt
  types:
   job:
    ntasks: 1
