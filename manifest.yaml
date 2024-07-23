@@ -2,7 +2,7 @@ kind: AIchorManifest
 spec:
  operator: slurm 
  #command: python3 ./bnt-demo./cpu_load.py
- command: nextflow run process_outputs.nf -with-report s3://aichor-demo-dali-outputs/outputs/123/nf-report11.html
+ command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
   job:
    ntasks: 1
