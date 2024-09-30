@@ -7,6 +7,7 @@ process firstProcess {
   script:
   '''
   echo Hello world from AIchor > aichorfoo.txt
+  sleep 300
   '''
 }
 
@@ -16,6 +17,7 @@ process secondProcess {
   script:
   '''
   cat aichorfoo.txt
+  sleep 500
   '''
 }
 
