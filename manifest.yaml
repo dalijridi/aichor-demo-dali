@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ command: ./slurm-helloworld/src/deploy-with-conda.sh
  types:
   job:
    ntasks: 1
