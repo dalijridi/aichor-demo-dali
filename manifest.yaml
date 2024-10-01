@@ -4,4 +4,4 @@ spec:
  command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
   job:
-   constraints: g5xlarge
+   cluster_constraints: g5xlarge
