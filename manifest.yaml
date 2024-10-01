@@ -4,4 +4,5 @@ spec:
  command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
   job:
-   randomkey: randomvalue
+   constraints: g5xlarge
+   partition: compute
