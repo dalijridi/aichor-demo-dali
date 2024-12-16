@@ -2,7 +2,7 @@ kind: AIchorManifest
 spec:
  operator: slurm
  #command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
- command: pwd >> /mnt/shared/DEBUG_PWD.txt && sudo chmod +x cpu_load.sh && ./cpu_load.sh
+ command: pwd >> /mnt/shared/DEBUG_PWD.txt && ./cpu_load.sh
  types:
   job:
    ntasks: 1   
