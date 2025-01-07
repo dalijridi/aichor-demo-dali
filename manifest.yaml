@@ -12,5 +12,5 @@ spec:
    time: 01:00:00
    #partition: compute
    #constraint: g5xlarge
-   #gres: gpu:1
+   #gres: gpu:1 
    
