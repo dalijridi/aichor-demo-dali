@@ -11,6 +11,7 @@ spec:
    memory_per_cpu: 1G
    time: 01:00:00  
    #partition: compute
-   #constraint: g5xlarge 
+   #constraint: g5xlarge
+   
    #gres: gpu:1 
    
