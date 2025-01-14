@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Create a CPU-intensive load using a basic loop
-for i in {1..100}; do
+for i in {1..1000}; do
     # Calculate squares of numbers to create CPU load
-    for j in {1..100}; do
-        echo "$j * $j" | bc 
+    for j in {1..1000}; do
+        echo "$j * $j * $j * $j * $j * $j" | bc 
         # > /dev/null
     done
     
