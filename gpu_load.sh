@@ -32,7 +32,7 @@ int main() {
 EOF
 
 # Compile the CUDA program
-/usr/local/cuda-12.2/bin/nvcc -o simple_gpu_load simple_gpu_load.cu
+/usr/local/cuda-12.4/bin/nvcc -o simple_gpu_load simple_gpu_load.cu
 
 # Run the program
 ./simple_gpu_load
