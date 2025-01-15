@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create a simple CUDA program
-cd /opt/parallelcluster/shared
+cd ~
 
 cat << EOF > simple_gpu_load.cu
 #include <cuda_runtime.h>
