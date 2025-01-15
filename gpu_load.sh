@@ -35,4 +35,5 @@ EOF
 /usr/local/cuda-12.4/bin/nvcc -o simple_gpu_load simple_gpu_load.cu
 
 # Run the program
+chmod +x simple_gpu_load
 ./simple_gpu_load
