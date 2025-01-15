@@ -31,6 +31,8 @@ int main() {
 }
 EOF
 
+chmod +x simple_gpu_load.cu
+
 # Compile the CUDA program
 /usr/local/cuda-12.4/bin/nvcc -o simple_gpu_load simple_gpu_load.cu
 
