@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Create a simple CUDA program
-touch simple_gpu_load.cu
-chmod +x simple_gpu_load.cu
+chmod +w $(pwd)
 
 cat << EOF > simple_gpu_load.cu
 #include <cuda_runtime.h>
