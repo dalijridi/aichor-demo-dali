@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Create a simple CUDA program
+touch simple_gpu_load.cu
+chmod +x simple_gpu_load.cu
+
 cat << EOF > simple_gpu_load.cu
 #include <cuda_runtime.h>
 #include <stdio.h>
@@ -30,8 +33,6 @@ int main() {
     return 0;
 }
 EOF
-
-chmod +x simple_gpu_load.cu
 
 # Compile the CUDA program
 /usr/local/cuda-12.4/bin/nvcc -o simple_gpu_load simple_gpu_load.cu
