@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'europe-west4-docker.pkg.dev/aichor-data-dev/cloud-run-source-deploy/clone-github-repo/webhook-handler', '.' ]
+options:
+  logging: NONE
