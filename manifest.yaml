@@ -1,16 +1,17 @@
 kind: AIchorManifest
+apiVersion: 0.2.2
+
+builder:
+  image: image
+  dockerfile: ./dockerfiles/Dockerfile
+  context: .
+
 spec:
- operator: slurm
- #command: nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
- #command: pwd >> /mnt/shared/DEBUG_PWD.txt && ./gpu_load.sh
- command: pwd >> /mnt/shared/DEBUG_PWD.txt && ./cpu_load.sh
- types:
-  job:
-   ntasks: 1
-   #nodes: 1   
-   cpus_per_task: 1
-   memory_per_cpu: 1G 
-   time: 01:00:00  
-   # partition: queue1
-   # constraint: g5xlarge
-   # gres: gpu:1
+  operator: vertexai
+  image: image
+  command: "python3 -u main.py --operator=tf --sleep=300 --tb-write=True"
+
+  types:
+    Worker:
+      machineType: n1-standard-4
+      replicaCount: 1
