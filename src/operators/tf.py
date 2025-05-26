@@ -1,13 +1,40 @@
 # src/operators/tf.py
-import tensorflow as tf
-import numpy as np
+import sys
 import os
-import json
-from datetime import datetime
 
 def tfop():
     """Simple TensorFlow training that generates real output data"""
     print("Starting TensorFlow training...")
+    print(f"Python version: {sys.version}")
+    print(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
+    
+    # Check and import required packages
+    try:
+        import tensorflow as tf
+        print(f"TensorFlow version: {tf.__version__}")
+    except ImportError as e:
+        print(f"Failed to import TensorFlow: {e}")
+        print("Installing TensorFlow...")
+        os.system("pip install tensorflow")
+        import tensorflow as tf
+        print(f"TensorFlow version: {tf.__version__}")
+    
+    try:
+        import numpy as np
+        print(f"NumPy version: {np.__version__}")
+    except ImportError as e:
+        print(f"Failed to import NumPy: {e}")
+        print("Installing NumPy...")
+        os.system("pip install numpy")
+        import numpy as np
+        print(f"NumPy version: {np.__version__}")
+    
+    try:
+        import json
+        from datetime import datetime
+    except ImportError as e:
+        print(f"Failed to import standard library modules: {e}")
+        return {"error": "Missing standard library modules"}
     
     # Create synthetic dataset (simple regression problem)
     print("Generating synthetic dataset...")
