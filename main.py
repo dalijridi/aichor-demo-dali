@@ -9,13 +9,25 @@ def simple_tf_training():
     print("Starting simple TensorFlow training...")
     
     try:
-        # Check if TensorFlow is available
+        # Check if TensorFlow is available, install if missing
         print("Checking TensorFlow availability...")
-        import tensorflow as tf
-        print(f"✓ TensorFlow version: {tf.__version__}")
+        try:
+            import tensorflow as tf
+            print(f"✓ TensorFlow version: {tf.__version__}")
+        except ImportError:
+            print("TensorFlow not found, installing...")
+            os.system("pip install tensorflow>=2.8.0")
+            import tensorflow as tf
+            print(f"✓ TensorFlow installed, version: {tf.__version__}")
         
-        import numpy as np
-        print(f"✓ NumPy version: {np.__version__}")
+        try:
+            import numpy as np
+            print(f"✓ NumPy version: {np.__version__}")
+        except ImportError:
+            print("NumPy not found, installing...")
+            os.system("pip install numpy")
+            import numpy as np
+            print(f"✓ NumPy installed, version: {np.__version__}")
         
         # Create very simple data
         print("Creating simple dataset...")
