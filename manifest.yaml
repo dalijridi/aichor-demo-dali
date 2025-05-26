@@ -9,7 +9,7 @@ builder:
 spec:
   operator: vertexai
   image: image
-  command: "python3 -u main.py --operator=tf --sleep=300 --tb-write=True"
+  command: "python3 -u main.py --operator=tf --echos=50 --tb-write=True"
 
   types:
     workerPoolSpecs:
