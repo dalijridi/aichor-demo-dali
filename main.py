@@ -1,134 +1,86 @@
 import argparse
+import time
 import sys
-import os
 import traceback
 from datetime import datetime
+from src.operators.jax import jaxop
+from src.operators.ray import rayop
+from src.operators.tf import tfop
+from src.utils.tensorboard import dummy_tb_write
 
-def log_info(message):
+def log_with_timestamp(message):
+    """Log message with timestamp"""
     timestamp = datetime.now().isoformat()
     print(f"[{timestamp}] {message}")
-    sys.stdout.flush()
+    sys.stdout.flush()  # Ensure immediate output
 
-def diagnostic_check():
-    """Run basic diagnostic checks"""
-    log_info("=== DIAGNOSTIC MODE ===")
-    log_info(f"Python version: {sys.version}")
-    log_info(f"Platform: {sys.platform}")
-    log_info(f"Current working directory: {os.getcwd()}")
-    log_info(f"Python executable: {sys.executable}")
-    
-    # Check environment variables
-    log_info("Key environment variables:")
-    for var in ['PATH', 'PYTHONPATH', 'HOME', 'USER']:
-        value = os.environ.get(var, 'NOT_SET')
-        log_info(f"  {var}: {value[:100]}{'...' if len(str(value)) > 100 else ''}")
-    
-    # Check available packages
-    log_info("Checking package availability...")
-    packages_to_check = ['tensorflow', 'numpy', 'json', 'time', 'argparse']
-    
-    for package in packages_to_check:
-        try:
-            if package == 'json':
-                import json
-                log_info(f"  ✓ {package}: Available (built-in)")
-            elif package == 'time':
-                import time
-                log_info(f"  ✓ {package}: Available (built-in)")
-            elif package == 'argparse':
-                import argparse
-                log_info(f"  ✓ {package}: Available (built-in)")
-            elif package == 'numpy':
-                import numpy as np
-                log_info(f"  ✓ {package}: {np.__version__}")
-            elif package == 'tensorflow':
-                import tensorflow as tf
-                log_info(f"  ✓ {package}: {tf.__version__}")
-        except ImportError as e:
-            log_info(f"  ✗ {package}: NOT AVAILABLE - {e}")
-        except Exception as e:
-            log_info(f"  ? {package}: ERROR - {e}")
-    
-    # Check file system
-    log_info("Checking file system...")
-    try:
-        test_dir = "/tmp/test_write"
-        os.makedirs(test_dir, exist_ok=True)
-        test_file = os.path.join(test_dir, "test.txt")
-        with open(test_file, 'w') as f:
-            f.write("test")
-        with open(test_file, 'r') as f:
-            content = f.read()
-        os.remove(test_file)
-        os.rmdir(test_dir)
-        log_info("  ✓ File system: Read/write operations work")
-    except Exception as e:
-        log_info(f"  ✗ File system: Error - {e}")
-    
-    log_info("=== DIAGNOSTIC COMPLETE ===")
-    return True
-
-def simple_training():
-    """Minimal training without external dependencies"""
-    log_info("=== SIMPLE TRAINING MODE ===")
-    
-    try:
-        # Try to do minimal TensorFlow training
-        import tensorflow as tf
-        import numpy as np
-        
-        log_info("Creating simple dataset...")
-        # Very simple dataset
-        X = np.array([[1.], [2.], [3.], [4.]], dtype=np.float32)
-        y = np.array([[2.], [4.], [6.], [8.]], dtype=np.float32)  # y = 2x
-        
-        log_info("Creating model...")
-        model = tf.keras.Sequential([
-            tf.keras.layers.Dense(1, input_shape=(1,))
-        ])
-        
-        model.compile(optimizer='adam', loss='mse')
-        
-        log_info("Training model...")
-        history = model.fit(X, y, epochs=10, verbose=1)
-        
-        log_info("Making prediction...")
-        pred = model.predict(np.array([[5.]], dtype=np.float32))
-        log_info(f"Prediction for input 5: {pred[0][0]:.2f} (expected ~10)")
-        
-        log_info("✓ Simple training completed successfully!")
-        return {"status": "success", "final_loss": float(history.history['loss'][-1])}
-        
-    except Exception as e:
-        log_info(f"✗ Simple training failed: {e}")
-        traceback.print_exc()
-        return {"status": "failed", "error": str(e)}
-
-def main():
-    parser = argparse.ArgumentParser(description='Diagnostic training script')
-    parser.add_argument("--mode", type=str, default="both", 
-                       choices=["diagnostic", "training", "both"],
-                       help="Mode to run")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='AIchor Training on any operator')
+    parser.add_argument("--operator", type=str, default="tf", choices=["ray", "jax", "tf"],
+                       help="operator name")
+    parser.add_argument("--sleep", type=int, default=0, 
+                       help="sleep time in seconds after training")
+    parser.add_argument("--tb-write", action="store_true", 
+                       help="test write to tensorboard")
+    parser.add_argument("--epochs", type=int, default=50,
+                       help="number of training epochs (for supported operators)")
     
     args = parser.parse_args()
     
-    log_info("Starting diagnostic script...")
-    log_info(f"Mode: {args.mode}")
+    log_with_timestamp(f"Starting training with {args.operator} operator")
+    log_with_timestamp(f"Arguments: {vars(args)}")
+    
+    # Track training start time
+    start_time = time.time()
+    training_successful = False
+    results = None
     
     try:
-        if args.mode in ["diagnostic", "both"]:
-            diagnostic_check()
+        if args.operator == "ray":
+            log_with_timestamp("Initializing Ray operator...")
+            results = rayop()
+        elif args.operator == "jax":
+            log_with_timestamp("Initializing JAX operator...")
+            results = jaxop()
+        elif args.operator == "tf":
+            log_with_timestamp("Initializing TensorFlow operator...")
+            results = tfop()
         
-        if args.mode in ["training", "both"]:
-            result = simple_training()
-            log_info(f"Training result: {result}")
+        training_successful = True
+        training_time = time.time() - start_time
+        log_with_timestamp(f"Training completed successfully in {training_time:.2f} seconds")
         
-        log_info("Script completed successfully!")
+        if results:
+            log_with_timestamp("Training results summary:")
+            if isinstance(results, dict):
+                for key, value in results.items():
+                    log_with_timestamp(f"  {key}: {value}")
+            else:
+                log_with_timestamp(f"  Results: {results}")
         
     except Exception as e:
-        log_info(f"Script failed with error: {e}")
+        training_time = time.time() - start_time
+        log_with_timestamp(f"Training failed after {training_time:.2f} seconds")
+        log_with_timestamp(f"Error: {str(e)}")
+        log_with_timestamp("Full traceback:")
         traceback.print_exc()
         sys.exit(1)
-
-if __name__ == "__main__":
-    main()
+    
+    # Optional TensorBoard write test
+    if args.tb_write:
+        try:
+            log_with_timestamp("Testing TensorBoard write...")
+            dummy_tb_write()
+            log_with_timestamp("TensorBoard write test completed")
+        except Exception as e:
+            log_with_timestamp(f"TensorBoard write test failed: {e}")
+    
+    # Optional sleep (useful for debugging or keeping job alive)
+    if args.sleep > 0:
+        log_with_timestamp(f"Sleeping for {args.sleep}s before exiting...")
+        time.sleep(args.sleep)
+    
+    # Final status
+    total_time = time.time() - start_time
+    log_with_timestamp(f"Script completed successfully in {total_time:.2f} seconds")
+    log_with_timestamp("All operations finished - exiting cleanly")
