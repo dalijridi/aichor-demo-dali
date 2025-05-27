@@ -75,23 +75,16 @@ def simple_tf_training():
         
         # Get output directory from environment variables (Vertex AI standard)
         # This corresponds to baseOutputDirectory.outputUriPrefix in your training config
-        base_output_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
+        # Which should already include the pipeline_name from your Python config
+        model_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
         
-        # Get training job ID for unique folder naming
+        # Get additional info for logging
         job_id = os.environ.get('CLOUD_ML_JOB_ID', 'local-training')
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         
-        # Create unique output directory for this training run
-        if base_output_dir.startswith('gs://'):
-            # Remove trailing slash if present and add job-specific folder
-            base_clean = base_output_dir.rstrip('/')
-            model_dir = f"{base_clean}/training_{job_id}_{timestamp}"
-        else:
-            model_dir = os.path.join(base_output_dir, f"training_{job_id}_{timestamp}")
-        
-        print(f"Base output directory: {base_output_dir}")
+        print(f"Output directory (includes pipeline name): {model_dir}")
         print(f"Training job ID: {job_id}")
-        print(f"Unique output directory: {model_dir}")
+        print(f"Training timestamp: {timestamp}")
         
         # Create local directories
         os.makedirs('/tmp/outputs', exist_ok=True)
@@ -102,7 +95,7 @@ def simple_tf_training():
         model.save(local_model_path, save_format='tf')
         print(f"Model saved locally to: {local_model_path}")
         
-        # Create training results
+        # Create training results (include job ID and timestamp in metadata)
         results = {
             'status': 'success',
             'final_loss': float(final_loss),
@@ -113,6 +106,7 @@ def simple_tf_training():
             },
             'model_architecture': model.to_json(),
             'training_timestamp': datetime.now().isoformat(),
+            'job_id': job_id,
             'tensorflow_version': tf.__version__,
             'numpy_version': np.__version__
         }
@@ -155,17 +149,17 @@ def simple_tf_training():
         traceback.print_exc()
         return {'status': 'training_error', 'error': str(e)}
 
-def upload_to_gcs(unique_output_dir, local_model_path, results_path, weights_path):
+def upload_to_gcs(output_dir, local_model_path, results_path, weights_path):
     """Upload model and results to Google Cloud Storage"""
     try:
         from google.cloud import storage
         
-        print(f"Uploading to GCS unique output directory: {unique_output_dir}")
+        print(f"Uploading to GCS output directory: {output_dir}")
         
         # Parse GCS path
-        # unique_output_dir format: gs://vertex-trainings-outputs/vertexai/training_job123_20241201_143022
-        bucket_name = unique_output_dir.replace('gs://', '').split('/')[0]
-        blob_prefix = '/'.join(unique_output_dir.replace('gs://', '').split('/')[1:])
+        # output_dir format: gs://vertex-trainings-outputs/vertexai/pipeline_name
+        bucket_name = output_dir.replace('gs://', '').split('/')[0]
+        blob_prefix = '/'.join(output_dir.replace('gs://', '').split('/')[1:])
         
         print(f"Bucket: {bucket_name}")
         print(f"Prefix: {blob_prefix}")
