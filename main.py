@@ -75,10 +75,23 @@ def simple_tf_training():
         
         # Get output directory from environment variables (Vertex AI standard)
         # This corresponds to baseOutputDirectory.outputUriPrefix in your training config
-        model_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
-        print(f"Base output directory (from baseOutputDirectory.outputUriPrefix): {model_dir}")
+        base_output_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
         
-        # Expected: gs://vertex-trainings-outputs/vertexai
+        # Get training job ID for unique folder naming
+        job_id = os.environ.get('CLOUD_ML_JOB_ID', 'local-training')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        # Create unique output directory for this training run
+        if base_output_dir.startswith('gs://'):
+            # Remove trailing slash if present and add job-specific folder
+            base_clean = base_output_dir.rstrip('/')
+            model_dir = f"{base_clean}/training_{job_id}_{timestamp}"
+        else:
+            model_dir = os.path.join(base_output_dir, f"training_{job_id}_{timestamp}")
+        
+        print(f"Base output directory: {base_output_dir}")
+        print(f"Training job ID: {job_id}")
+        print(f"Unique output directory: {model_dir}")
         
         # Create local directories
         os.makedirs('/tmp/outputs', exist_ok=True)
@@ -119,7 +132,7 @@ def simple_tf_training():
         if model_dir.startswith('gs://'):
             upload_to_gcs(model_dir, local_model_path, results_path, weights_path)
         else:
-            print(f"Base output directory is not a GCS path, files saved locally only")
+            print(f"Output directory is not a GCS path, files saved locally only")
             # Copy to the specified model directory if it's local
             import shutil
             if model_dir != '/tmp/model':
@@ -127,7 +140,7 @@ def simple_tf_training():
                 shutil.copytree(local_model_path, os.path.join(model_dir, 'saved_model'), dirs_exist_ok=True)
                 shutil.copy2(results_path, model_dir)
                 shutil.copy2(weights_path, model_dir)
-                print(f"Files copied to base output directory: {model_dir}")
+                print(f"Files copied to output directory: {model_dir}")
         
         print("✓ TensorFlow training completed successfully!")
         return results
@@ -142,18 +155,17 @@ def simple_tf_training():
         traceback.print_exc()
         return {'status': 'training_error', 'error': str(e)}
 
-def upload_to_gcs(base_output_dir, local_model_path, results_path, weights_path):
+def upload_to_gcs(unique_output_dir, local_model_path, results_path, weights_path):
     """Upload model and results to Google Cloud Storage"""
     try:
         from google.cloud import storage
-        import glob
         
-        print(f"Uploading to GCS base output directory: {base_output_dir}")
+        print(f"Uploading to GCS unique output directory: {unique_output_dir}")
         
         # Parse GCS path
-        # base_output_dir format: gs://vertex-trainings-outputs/vertexai
-        bucket_name = base_output_dir.replace('gs://', '').split('/')[0]
-        blob_prefix = '/'.join(base_output_dir.replace('gs://', '').split('/')[1:])
+        # unique_output_dir format: gs://vertex-trainings-outputs/vertexai/training_job123_20241201_143022
+        bucket_name = unique_output_dir.replace('gs://', '').split('/')[0]
+        blob_prefix = '/'.join(unique_output_dir.replace('gs://', '').split('/')[1:])
         
         print(f"Bucket: {bucket_name}")
         print(f"Prefix: {blob_prefix}")
@@ -167,9 +179,10 @@ def upload_to_gcs(base_output_dir, local_model_path, results_path, weights_path)
         for root, dirs, files in os.walk(local_model_path):
             for file in files:
                 local_file_path = os.path.join(root, file)
-                # Get relative path from the saved_model directory
-                relative_path = os.path.relpath(local_file_path, '/tmp/model')
-                blob_name = f"{blob_prefix}/{relative_path}".replace('\\', '/')
+                # Get relative path from the local model directory
+                relative_path = os.path.relpath(local_file_path, local_model_path)
+                # Clean up the blob name construction
+                blob_name = f"{blob_prefix}/saved_model/{relative_path}".replace('\\', '/')
                 
                 blob = bucket.blob(blob_name)
                 blob.upload_from_filename(local_file_path)
