@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 
 def simple_tf_training():
-    """Minimal TensorFlow training with GCS output support"""
+    """Minimal TensorFlow training with GCS output support, extended to run longer."""
     print("Starting simple TensorFlow training...")
     
     try:
@@ -56,9 +56,9 @@ def simple_tf_training():
         model.compile(optimizer='adam', loss='mse', metrics=['mae'])
         print("Model compiled successfully")
         
-        # Train for just a few epochs
-        print("Starting training...")
-        history = model.fit(X, y, epochs=10, verbose=1, batch_size=2)
+        # Train for more epochs to extend training time
+        print("Starting training for 100 epochs...")
+        history = model.fit(X, y, epochs=100, verbose=1, batch_size=2)
         
         # Test prediction
         print("Testing prediction...")
@@ -74,8 +74,6 @@ def simple_tf_training():
         print("Saving model and outputs...")
         
         # Get output directory from environment variables (Vertex AI standard)
-        # This corresponds to baseOutputDirectory.outputUriPrefix in your training config
-        # Which should already include the pipeline_name from your Python config
         model_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
         
         # Get additional info for logging
@@ -95,7 +93,7 @@ def simple_tf_training():
         model.save(local_model_path, save_format='tf')
         print(f"Model saved locally to: {local_model_path}")
         
-        # Create training results (include job ID and timestamp in metadata)
+        # Create training results
         results = {
             'status': 'success',
             'final_loss': float(final_loss),
@@ -135,7 +133,14 @@ def simple_tf_training():
                 shutil.copy2(results_path, model_dir)
                 shutil.copy2(weights_path, model_dir)
                 print(f"Files copied to output directory: {model_dir}")
-        
+
+        # --- MODIFICATION START ---
+        # Add a sleep period to ensure the job runs for more than 15 minutes.
+        sleep_duration = 960  # 16 minutes
+        print(f"Training finished. Sleeping for {sleep_duration} seconds to extend job duration...")
+        time.sleep(sleep_duration)
+        # --- MODIFICATION END ---
+
         print("✓ TensorFlow training completed successfully!")
         return results
         
@@ -157,7 +162,6 @@ def upload_to_gcs(output_dir, local_model_path, results_path, weights_path):
         print(f"Uploading to GCS output directory: {output_dir}")
         
         # Parse GCS path
-        # output_dir format: gs://vertex-trainings-outputs/vertexai/pipeline_name
         bucket_name = output_dir.replace('gs://', '').split('/')[0]
         blob_prefix = '/'.join(output_dir.replace('gs://', '').split('/')[1:])
         
@@ -173,9 +177,7 @@ def upload_to_gcs(output_dir, local_model_path, results_path, weights_path):
         for root, dirs, files in os.walk(local_model_path):
             for file in files:
                 local_file_path = os.path.join(root, file)
-                # Get relative path from the local model directory
                 relative_path = os.path.relpath(local_file_path, local_model_path)
-                # Clean up the blob name construction
                 blob_name = f"{blob_prefix}/saved_model/{relative_path}".replace('\\', '/')
                 
                 blob = bucket.blob(blob_name)
@@ -211,7 +213,7 @@ def main():
     
     # Print relevant environment variables
     print("\n=== Environment Variables ===")
-    env_vars = ['AIP_MODEL_DIR', 'AIP_CHECKPOINT_DIR', 'AIP_TENSORBOARD_LOG_DIR', 
+    env_vars = ['AIP_MODEL_DIR', 'AIP_CHECKPOINT_DIR', 'AIP_TENSORBOARD_LOG_DIR',    
                 'CLOUD_ML_PROJECT_ID', 'CLOUD_ML_JOB_ID']
     for var in env_vars:
         value = os.environ.get(var, 'Not set')
