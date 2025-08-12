@@ -57,8 +57,8 @@ def simple_tf_training():
         print("Model compiled successfully")
         
         # Train for more epochs to extend training time
-        print("Starting training for 300 epochs...")
-        history = model.fit(X, y, epochs=300, verbose=1, batch_size=2)
+        print("Starting training for 100 epochs...")
+        history = model.fit(X, y, epochs=100, verbose=1, batch_size=2)
         
         # Test prediction
         print("Testing prediction...")
@@ -136,7 +136,7 @@ def simple_tf_training():
 
         # --- MODIFICATION START ---
         # Add a sleep period to ensure the job runs for more than 15 minutes.
-        sleep_duration = 1500  # 25 minutes
+        sleep_duration = 960  # 16 minutes
         print(f"Training finished. Sleeping for {sleep_duration} seconds to extend job duration...")
         time.sleep(sleep_duration)
         # --- MODIFICATION END ---
