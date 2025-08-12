@@ -14,12 +14,11 @@ sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 
 def simple_tf_training():
-    """Minimal TensorFlow training with GCS output support"""
+    """Minimal TensorFlow training with GCS output support and live Vertex logs"""
     print("Starting simple TensorFlow training...")
-    
+
     try:
-        # Check if TensorFlow is available, install if missing
-        print("Checking TensorFlow availability...")
+        # Ensure TensorFlow
         try:
             import tensorflow as tf
             tf.get_logger().setLevel('INFO')
@@ -29,7 +28,8 @@ def simple_tf_training():
             os.system("pip install tensorflow>=2.8.0")
             import tensorflow as tf
             print(f"✓ TensorFlow installed, version: {tf.__version__}")
-        
+
+        # Ensure NumPy
         try:
             import numpy as np
             print(f"✓ NumPy version: {np.__version__}")
@@ -38,8 +38,8 @@ def simple_tf_training():
             os.system("pip install numpy")
             import numpy as np
             print(f"✓ NumPy installed, version: {np.__version__}")
-        
-        # Install Google Cloud Storage client
+
+        # Ensure GCS client
         try:
             from google.cloud import storage
             print("✓ Google Cloud Storage client available")
@@ -48,62 +48,50 @@ def simple_tf_training():
             os.system("pip install google-cloud-storage")
             from google.cloud import storage
             print("✓ Google Cloud Storage client installed")
-        
-        # Create very simple data
-        print("Creating simple dataset...")
+
+        # Data
         X = np.array([[1.0], [2.0], [3.0], [4.0]], dtype=np.float32)
         y = np.array([[2.0], [4.0], [6.0], [8.0]], dtype=np.float32)  # y = 2*x
-        print(f"Dataset created: X shape {X.shape}, y shape {y.shape}")
-        
-        # Create simple model
-        print("Creating model...")
+
+        # Model
         model = tf.keras.Sequential([
             tf.keras.layers.Dense(1, input_shape=(1,), name='simple_dense')
         ])
-        
         model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-        print("Model compiled successfully")
-        
-        # Train for just a few epochs
-        print("Starting training...")
-        history = model.fit(X, y, epochs=10, verbose=2, batch_size=2)
-        
-        # Test prediction
-        print("Testing prediction...")
+
+        # Custom callback for live logs
+        class VertexLoggingCallback(tf.keras.callbacks.Callback):
+            def on_epoch_end(self, epoch, logs=None):
+                logs = logs or {}
+                msg = f"Epoch {epoch+1} - " + ", ".join(f"{k}: {v:.4f}" for k, v in logs.items())
+                print(msg, flush=True)
+
+        # Train
+        print("Starting training with live epoch logging...")
+        history = model.fit(
+            X, y,
+            epochs=10,
+            batch_size=2,
+            verbose=0,  # disable Keras' internal progress output
+            callbacks=[VertexLoggingCallback()]
+        )
+
+        # Prediction test
         test_input = np.array([[5.0]], dtype=np.float32)
         prediction = model.predict(test_input, verbose=0)
-        print(f"Input: 5.0, Prediction: {prediction[0][0]:.2f}, Expected: ~10.0")
-        
-        # Get final loss
+        print(f"Test input 5.0 → Prediction: {prediction[0][0]:.2f} (expected ~10.0)")
+
+        # Save model/results as before...
         final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss:.4f}")
-        
-        # Save model and outputs
-        print("Saving model and outputs...")
-        
-        # Get output directory from environment variables (Vertex AI standard)
-        # This corresponds to baseOutputDirectory.outputUriPrefix in your training config
-        # Which should already include the pipeline_name from your Python config
         model_dir = os.environ.get('AIP_MODEL_DIR', '/tmp/model')
-        
-        # Get additional info for logging
         job_id = os.environ.get('CLOUD_ML_JOB_ID', 'local-training')
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
-        print(f"Output directory (includes pipeline name): {model_dir}")
-        print(f"Training job ID: {job_id}")
-        print(f"Training timestamp: {timestamp}")
-        
-        # Create local directories
+
         os.makedirs('/tmp/outputs', exist_ok=True)
         os.makedirs('/tmp/model', exist_ok=True)
-        
-        # Save the model locally first
         local_model_path = '/tmp/model/saved_model'
         model.save(local_model_path, save_format='tf')
-        print(f"Model saved locally to: {local_model_path}")
-        
-        # Create training results (include job ID and timestamp in metadata)
+
         results = {
             'status': 'success',
             'final_loss': float(final_loss),
@@ -118,41 +106,28 @@ def simple_tf_training():
             'tensorflow_version': tf.__version__,
             'numpy_version': np.__version__
         }
-        
-        # Save results to JSON
+
         results_path = '/tmp/outputs/training_results.json'
         with open(results_path, 'w') as f:
             json.dump(results, f, indent=2)
-        print(f"Results saved to: {results_path}")
-        
-        # Save model weights separately
+
         weights_path = '/tmp/outputs/model_weights.h5'
         model.save_weights(weights_path)
-        print(f"Model weights saved to: {weights_path}")
-        
-        # Upload to GCS if model directory is a GCS path
+
         if model_dir.startswith('gs://'):
             upload_to_gcs(model_dir, local_model_path, results_path, weights_path)
         else:
-            print(f"Output directory is not a GCS path, files saved locally only")
-            # Copy to the specified model directory if it's local
             import shutil
             if model_dir != '/tmp/model':
                 os.makedirs(model_dir, exist_ok=True)
                 shutil.copytree(local_model_path, os.path.join(model_dir, 'saved_model'), dirs_exist_ok=True)
                 shutil.copy2(results_path, model_dir)
                 shutil.copy2(weights_path, model_dir)
-                print(f"Files copied to output directory: {model_dir}")
-        
-        print("✓ TensorFlow training completed successfully!")
+
+        print("✓ Training completed successfully with live logs!")
         return results
-        
-    except ImportError as e:
-        print(f"✗ Import error: {e}")
-        print("Required packages not available")
-        return {'status': 'import_error', 'error': str(e)}
+
     except Exception as e:
-        print(f"✗ Training error: {e}")
         import traceback
         traceback.print_exc()
         return {'status': 'training_error', 'error': str(e)}
