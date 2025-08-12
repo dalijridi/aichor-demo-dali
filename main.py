@@ -5,6 +5,13 @@ import os
 import time
 import json
 from datetime import datetime
+import logging
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+# Force Python logging to stdout
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, force=True)
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 
 def simple_tf_training():
     """Minimal TensorFlow training with GCS output support"""
@@ -15,6 +22,7 @@ def simple_tf_training():
         print("Checking TensorFlow availability...")
         try:
             import tensorflow as tf
+            tf.get_logger().setLevel('INFO')
             print(f"✓ TensorFlow version: {tf.__version__}")
         except ImportError:
             print("TensorFlow not found, installing...")
@@ -58,7 +66,7 @@ def simple_tf_training():
         
         # Train for just a few epochs
         print("Starting training...")
-        history = model.fit(X, y, epochs=10, verbose=1, batch_size=2)
+        history = model.fit(X, y, epochs=10, verbose=2, batch_size=2)
         
         # Test prediction
         print("Testing prediction...")
