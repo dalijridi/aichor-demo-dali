@@ -3,13 +3,13 @@ apiVersion: 0.2.2
 
 builder:
   image: image
-  dockerfile: ./dockerfiles/Dockerfile
+  dockerfile: Dockerfile
   context: .
 
 spec:
   operator: vertexai
   image: image
-  command: "python3 -u main.gpu.py --operator=tf  --sleep=0"
+  command: "python3 -u main.py --operator=tf  --sleep=0"
   #command: "python3 diagnostic_script.py --mode diagnostic"
 
   types:
