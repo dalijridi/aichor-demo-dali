@@ -7,58 +7,76 @@ import json
 from datetime import datetime
 import logging
 
+# Configure logging and output for Vertex AI
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-# Force Python logging to stdout
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, force=True)
+os.environ['PYTHONUNBUFFERED'] = '1'
+
+# Force all output to stdout and flush immediately
+logging.basicConfig(
+    stream=sys.stdout, 
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    force=True
+)
+
+# Ensure line buffering for real-time output
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
+
+# Redirect stderr to stdout to capture all TensorFlow messages
+sys.stderr = sys.stdout
+
+def log_and_print(message):
+    """Print message with immediate flush for Vertex AI visibility"""
+    print(f"[TRAINING LOG] {message}", flush=True)
+    logging.info(message)
 
 def check_gpu_availability():
     """Check if GPU is available and configure TensorFlow to use it"""
     try:
         import tensorflow as tf
         
-        print("=== GPU AVAILABILITY CHECK ===")
-        print(f"TensorFlow version: {tf.__version__}")
+        log_and_print("=== GPU AVAILABILITY CHECK ===")
+        log_and_print(f"TensorFlow version: {tf.__version__}")
         
         # List physical devices
         gpus = tf.config.list_physical_devices('GPU')
-        print(f"Number of GPUs detected: {len(gpus)}")
+        log_and_print(f"Number of GPUs detected: {len(gpus)}")
         
         if len(gpus) == 0:
-            print("❌ NO GPU DETECTED! This script requires a GPU machine.")
-            print("Please ensure you're running on a GPU-enabled machine type.")
+            log_and_print("❌ NO GPU DETECTED! This script requires a GPU machine.")
+            log_and_print("Please ensure you're running on a GPU-enabled machine type.")
             sys.exit(1)
         
         # Print GPU details
         for i, gpu in enumerate(gpus):
-            print(f"GPU {i}: {gpu}")
+            log_and_print(f"GPU {i}: {gpu}")
             try:
                 gpu_details = tf.config.experimental.get_device_details(gpu)
-                print(f"  Device details: {gpu_details}")
+                log_and_print(f"  Device details: {gpu_details}")
             except:
-                print("  Device details not available")
+                log_and_print("  Device details not available")
         
         # Enable memory growth to prevent TensorFlow from allocating all GPU memory
         try:
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
-            print("✓ GPU memory growth enabled")
+            log_and_print("✓ GPU memory growth enabled")
         except RuntimeError as e:
-            print(f"Memory growth setting failed (this is OK if already initialized): {e}")
+            log_and_print(f"Memory growth setting failed (this is OK if already initialized): {e}")
         
         # Test GPU computation
-        print("\n=== GPU COMPUTATION TEST ===")
+        log_and_print("=== GPU COMPUTATION TEST ===")
         with tf.device('/GPU:0'):
             test_tensor = tf.constant([[1.0, 2.0], [3.0, 4.0]])
             result = tf.matmul(test_tensor, test_tensor)
-            print(f"GPU test computation successful: {result.numpy()}")
+            log_and_print(f"GPU test computation successful: {result.numpy()}")
         
-        print("✓ GPU is available and working correctly!")
+        log_and_print("✓ GPU is available and working correctly!")
         return True
         
     except Exception as e:
-        print(f"❌ GPU check failed: {e}")
+        log_and_print(f"❌ GPU check failed: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
@@ -143,30 +161,58 @@ def simple_tf_training():
             def __init__(self):
                 super().__init__()
                 self.epoch_start_time = None
+                self.batch_count = 0
+            
+            def on_train_begin(self, logs=None):
+                log_and_print("🚀 TRAINING STARTED!")
+                log_and_print(f"Total batches per epoch: {self.params['steps']}")
             
             def on_epoch_begin(self, epoch, logs=None):
                 self.epoch_start_time = time.time()
-                print(f"\n📈 Starting Epoch {epoch+1}/20...", flush=True)
+                self.batch_count = 0
+                log_and_print(f"📈 EPOCH {epoch+1}/{self.params['epochs']} STARTED")
+            
+            def on_batch_begin(self, batch, logs=None):
+                self.batch_count += 1
+            
+            def on_batch_end(self, batch, logs=None):
+                # Log progress every 20 batches
+                if batch > 0 and batch % 20 == 0:
+                    logs = logs or {}
+                    batch_loss = logs.get('loss', 0)
+                    log_and_print(f"  ⏳ Batch {batch+1}/{self.params['steps']}: loss={batch_loss:.6f}")
             
             def on_epoch_end(self, epoch, logs=None):
                 logs = logs or {}
                 epoch_time = time.time() - self.epoch_start_time
                 
-                # Format metrics nicely
-                metrics_str = []
-                for metric, value in logs.items():
-                    if 'val_' in metric:
-                        metrics_str.append(f"val_{metric.replace('val_', '')}: {value:.6f}")
-                    else:
-                        metrics_str.append(f"{metric}: {value:.6f}")
+                # Create detailed metrics summary
+                metrics_parts = []
+                val_metrics_parts = []
                 
-                print(f"✓ Epoch {epoch+1} completed in {epoch_time:.2f}s - {' - '.join(metrics_str)}", flush=True)
+                for metric, value in logs.items():
+                    if metric.startswith('val_'):
+                        val_metrics_parts.append(f"{metric}: {value:.6f}")
+                    else:
+                        metrics_parts.append(f"{metric}: {value:.6f}")
+                
+                log_and_print(f"✅ EPOCH {epoch+1} COMPLETED in {epoch_time:.2f}s")
+                log_and_print(f"   Training metrics: {' | '.join(metrics_parts)}")
+                if val_metrics_parts:
+                    log_and_print(f"   Validation metrics: {' | '.join(val_metrics_parts)}")
+                log_and_print(f"   Processed {self.batch_count} batches")
+                log_and_print("-" * 80)
             
-            def on_batch_end(self, batch, logs=None):
-                # Log progress every 50 batches for longer training
-                if batch > 0 and batch % 50 == 0:
+            def on_train_end(self, logs=None):
+                log_and_print("🎯 TRAINING COMPLETED!")
+        
+        # Add progress tracking callback
+        class BatchProgressCallback(tf.keras.callbacks.Callback):
+            def on_train_batch_end(self, batch, logs=None):
+                if batch % 50 == 0:  # Every 50 batches
                     logs = logs or {}
-                    print(f"  Batch {batch}: loss={logs.get('loss', 0):.6f}", flush=True)
+                    log_and_print(f"    Batch {batch}: loss={logs.get('loss', 0):.4f}")
+                    sys.stdout.flush()  # Force flush
 
         # Split data for validation
         split_idx = int(0.8 * len(X))
@@ -176,20 +222,31 @@ def simple_tf_training():
         print(f"\nTraining set: {X_train.shape}, Validation set: {X_val.shape}")
 
         # Train with GPU
-        print("\n=== STARTING GPU TRAINING WITH DETAILED LOGGING ===")
+        log_and_print("=== STARTING GPU TRAINING WITH DETAILED LOGGING ===")
+        log_and_print(f"Training on {X_train.shape[0]} samples, validating on {X_val.shape[0]} samples")
         start_time = time.time()
         
+        # Create callbacks with verbose logging
+        callbacks = [
+            DetailedVertexLoggingCallback(),
+            BatchProgressCallback(),
+            tf.keras.callbacks.EarlyStopping(
+                patience=5, 
+                restore_best_weights=True, 
+                verbose=1,
+                monitor='val_loss'
+            )
+        ]
+        
         with tf.device('/GPU:0'):
+            # Force immediate output by setting verbose=1 and using custom callbacks
             history = model.fit(
                 X_train, y_train,
                 validation_data=(X_val, y_val),
                 epochs=20,
-                batch_size=256,  # Larger batch size for GPU efficiency
-                verbose=0,  # Disable keras verbose to use our custom callback
-                callbacks=[
-                    DetailedVertexLoggingCallback(),
-                    tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True, verbose=1)
-                ]
+                batch_size=128,  # Smaller batch size for more frequent updates
+                verbose=1,  # Enable Keras verbose output
+                callbacks=callbacks
             )
         
         total_time = time.time() - start_time
