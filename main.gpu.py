@@ -384,18 +384,23 @@ def upload_to_gcs(output_dir, local_model_path, results_path, weights_path):
         traceback.print_exc()
 
 def main():
-    print("=== VERTEX AI GPU TRAINING SCRIPT ===")
-    print(f"Python version: {sys.version}")
-    print(f"Arguments: {sys.argv}")
-    print(f"Working directory: {os.getcwd()}")
+    # Test immediate logging
+    log_and_print("=== VERTEX AI GPU TRAINING SCRIPT STARTING ===")
+    for i in range(3):
+        log_and_print(f"Startup test log {i+1}/3 - timestamp: {datetime.now()}")
+        time.sleep(1)  # Small delay to test real-time logging
+    
+    log_and_print(f"Python version: {sys.version}")
+    log_and_print(f"Arguments: {sys.argv}")
+    log_and_print(f"Working directory: {os.getcwd()}")
     
     # Print relevant environment variables
-    print("\n=== Environment Variables ===")
+    log_and_print("=== Environment Variables ===")
     env_vars = ['AIP_MODEL_DIR', 'AIP_CHECKPOINT_DIR', 'AIP_TENSORBOARD_LOG_DIR', 
                 'CLOUD_ML_PROJECT_ID', 'CLOUD_ML_JOB_ID', 'CUDA_VISIBLE_DEVICES']
     for var in env_vars:
         value = os.environ.get(var, 'Not set')
-        print(f"{var}: {value}")
+        log_and_print(f"{var}: {value}")
     
     # Parse simple arguments manually
     sleep_time = 0
@@ -406,27 +411,27 @@ def main():
             try:
                 sleep_time = int(sys.argv[i + 1])
             except ValueError:
-                print(f"Invalid sleep value: {sys.argv[i + 1]}")
+                log_and_print(f"Invalid sleep value: {sys.argv[i + 1]}")
         if arg == "--operator" and i + 1 < len(sys.argv):
             operator = sys.argv[i + 1]
     
-    print(f"\nUsing operator: {operator}")
-    print(f"Sleep time: {sleep_time}")
+    log_and_print(f"Using operator: {operator}")
+    log_and_print(f"Sleep time: {sleep_time}")
     
     # Run training based on operator
     if operator == "tf":
         result = simple_tf_training()
-        print(f"\nFinal training result: {result}")
+        log_and_print(f"Final training result: {result}")
     else:
-        print(f"Operator '{operator}' not implemented in minimal version")
+        log_and_print(f"Operator '{operator}' not implemented in minimal version")
         result = {'status': 'not_implemented', 'operator': operator}
     
     # Optional sleep
     if sleep_time > 0:
-        print(f"Sleeping for {sleep_time} seconds...")
+        log_and_print(f"Sleeping for {sleep_time} seconds...")
         time.sleep(sleep_time)
     
-    print("🎉 Script completed successfully!")
+    log_and_print("🎉 Script completed successfully!")
     return 0
 
 if __name__ == "__main__":
