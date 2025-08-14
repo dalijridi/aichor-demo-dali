@@ -9,7 +9,7 @@ builder:
 spec:
   operator: vertexai
   image: image
-  command: "python3 -u main.gpu.py --operator=tf  --sleep=0"
+  command: "python3 -u main.gpu.py --operator=tf  --sleep=20"
   #command: "python3 diagnostic_script.py --mode diagnostic"
 
   types:
