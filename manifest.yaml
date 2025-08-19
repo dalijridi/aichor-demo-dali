@@ -3,7 +3,7 @@ apiVersion: 0.2.2
 
 builder:
   image: image
-  dockerfile: ./dockerfiles/gpu.Dockerfile #gpu training
+  dockerfile: gpu.Dockerfile #gpu training
   #dockerfile: Dockerfile #non gpu training
   context: .
 
