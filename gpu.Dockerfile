@@ -1,15 +1,22 @@
-# Use an official PyTorch image with CUDA 12.1 support
-# This ensures that CUDA/cuDNN versions are compatible
-FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
+# Use a more recent PyTorch image with better CUDA compatibility
+FROM pytorch/pytorch:2.2.1-cuda12.1-cudnn8-runtime
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV NVIDIA_VISIBLE_DEVICES=all
 
 # Set the working directory in the container
 WORKDIR /app
 
+# Install any additional dependencies if needed
+RUN pip install --no-cache-dir argparse
+
 # Copy the Python script into the container
 COPY main.gpu.py .
 
-# Install any additional dependencies if you have them (in a requirements.txt)
-# RUN pip install -r requirements.txt
+# Make sure the script is executable
+RUN chmod +x main.gpu.py
 
-# Set the entrypoint to run the training script when the container starts
-#ENTRYPOINT ["python", "main.gpu.py"]
+# Optional: Add healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD python3 -c "import torch; print('Health check passed')" || exit 1
