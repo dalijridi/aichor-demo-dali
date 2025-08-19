@@ -12,4 +12,4 @@ COPY main.gpu.py .
 # RUN pip install -r requirements.txt
 
 # Set the entrypoint to run the training script when the container starts
-ENTRYPOINT ["python", "main.gpu.py"]
+#ENTRYPOINT ["python", "main.gpu.py"]
