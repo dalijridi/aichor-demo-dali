@@ -1,6 +1,6 @@
 # Use an official PyTorch image with CUDA 12.1 support
 # This ensures that CUDA/cuDNN versions are compatible
-FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
 
 # Set the working directory in the container
 WORKDIR /app
