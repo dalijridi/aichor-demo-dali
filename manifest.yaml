@@ -11,7 +11,8 @@ spec:
   operator: vertexai
   image: image
   #command: "python3 -u main.gpu.py --operator=tf  --sleep=20" #gpu training
-  command: "python3 -u /app/main.gpu.py --epochs=10 --lr=0.001" #new gpu training
+  #command: "python3 -u /app/main.gpu.py --epochs=10 --lr=0.001" #new gpu training
+  command: "python3 -c \"import torch; print('PyTorch version:', torch.__version__); print('CUDA available:', torch.cuda.is_available())\""
   #command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
 
   types:
