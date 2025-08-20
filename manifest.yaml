@@ -2,15 +2,15 @@ kind: AIchorManifest
 apiVersion: 0.2.2
 
 builder:
-  image: test-pytorch
+  image: simple-gpu-test
   dockerfile: Dockerfile
   context: .
 
 spec:
   operator: vertexai
-  image: test-pytorch
+  image: simple-gpu-test
   #command: "python3 -u test-pytorch.py --sleep=10" #gpu training
-  command: "main.gpu.py --epochs=10 --lr=0.001" #new gpu training
+  command: "python3 -u main_gpu.py" #new gpu training
   #command: "echo 'Container works' > /tmp/output.log 2>&1 && cat /tmp/output.log && pwd && whoami"
   #command: "find /opt -name 'python*' -type f 2>/dev/null | head -5"
   #command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
@@ -18,7 +18,7 @@ spec:
   types:
     workerPoolSpecs:
     - machineSpec:
-        machineType: n1-highmem-2
+        machineType: n1-standard-4
         acceleratorType: NVIDIA_TESLA_T4 #gpu training
         acceleratorCount: 1 #gpu training
       replicaCount: 1
