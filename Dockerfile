@@ -11,10 +11,10 @@ ENV CUDA_LAUNCH_BLOCKING=1
 WORKDIR /app
 
 # Copy the training script
-COPY simple_gpu_test.py .
+COPY main_gpu.py .
 
 # Make script executable
-RUN chmod +x simple_gpu_test.py
+RUN chmod +x main_gpu.py
 
 # Test that PyTorch is working (CUDA might not be available during build, that's normal)
 RUN python3 -c "import torch; print('PyTorch version:', torch.__version__); print('CUDA available during build:', torch.cuda.is_available()); print('Build completed successfully')"
@@ -30,7 +30,7 @@ RUN echo '#!/bin/bash' > /app/run.sh && \
     echo 'echo "NVIDIA SMI output:"' >> /app/run.sh && \
     echo 'nvidia-smi || echo "nvidia-smi not available"' >> /app/run.sh && \
     echo 'echo "=== STARTING TRAINING ==="' >> /app/run.sh && \
-    echo 'exec python3 -u simple_gpu_test.py' >> /app/run.sh && \
+    echo 'exec python3 -u main_gpu.py' >> /app/run.sh && \
     chmod +x /app/run.sh
 
 # Default command
