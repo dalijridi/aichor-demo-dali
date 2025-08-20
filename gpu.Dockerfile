@@ -8,4 +8,5 @@ RUN pip install tensorboardX boto3
 WORKDIR /app
 
 # Copy the script (your TF setup copies to root, let's match that)
-COPY main.gpu.py .
+#COPY main.gpu.py .
+COPY test-pytorch.py .
