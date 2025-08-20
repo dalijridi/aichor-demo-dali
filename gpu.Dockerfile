@@ -1,22 +1,23 @@
-# Use a more recent PyTorch image with better CUDA compatibility
-FROM pytorch/pytorch:2.2.1-cuda12.1-cudnn8-runtime
+# Use the same approach as the working TensorFlow setup
+FROM python:3.9-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV NVIDIA_VISIBLE_DEVICES=all
+# Install system dependencies for CUDA (if needed) and PyTorch
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory in the container
+# Install PyTorch with CUDA support (similar to how the TF script installs TF)
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Install other dependencies
+RUN pip install numpy argparse
+
+# Set working directory
 WORKDIR /app
 
-# Install any additional dependencies if needed
-RUN pip install --no-cache-dir argparse
-
-# Copy the Python script into the container
+# Copy training script
 COPY main.gpu.py .
 
-# Make sure the script is executable
-RUN chmod +x main.gpu.py
-
-# Optional: Add healthcheck
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD python3 -c "import torch; print('Health check passed')" || exit 1
+# Set environment variables for proper output
+ENV PYTHONUNBUFFERED=1
