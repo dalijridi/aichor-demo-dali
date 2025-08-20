@@ -21,7 +21,8 @@ def log_print(message):
     sys.stderr.flush()
 
 def main():
-    log_print("🚀 STARTING SIMPLE GPU TRAINING TEST")
+    log_print("🚀 STARTING SIMPLE GPU/CPU TRAINING TEST")
+    log_print("⚠️  NOTE: CUDA availability during build was FALSE - will detect runtime availability")
     log_print("="*50)
     
     # 1. Environment Check
