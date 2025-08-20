@@ -10,7 +10,7 @@ spec:
   operator: vertexai
   image: simple-gpu-test
   #command: "python3 -u test-pytorch.py --sleep=10" #gpu training
-  command: "python3 -u main_gpu.py" #new gpu training
+  command: "/app/run.sh" #new gpu training
   #command: "echo 'Container works' > /tmp/output.log 2>&1 && cat /tmp/output.log && pwd && whoami"
   #command: "find /opt -name 'python*' -type f 2>/dev/null | head -5"
   #command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
