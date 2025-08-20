@@ -3,6 +3,7 @@
 import sys
 import os
 import time
+import subprocess
 
 # Use EXACT same setup as your working TensorFlow script
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
@@ -11,47 +12,90 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, force=True)
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 
-def test_pytorch():
-    """Just test if we can install and import PyTorch"""
-    print("Testing PyTorch installation...")
-
+def run_command(cmd):
+    """Run a command and capture output"""
     try:
-        # Try to import PyTorch
-        try:
-            import torch
-            print(f"✓ PyTorch already available, version: {torch.__version__}")
-        except ImportError:
-            print("PyTorch not found, installing CPU version...")
-            # Install CPU version first (safer)
-            os.system("pip install torch --index-url https://download.pytorch.org/whl/cpu")
-            import torch
-            print(f"✓ PyTorch CPU installed, version: {torch.__version__}")
-
-        # Simple test
-        x = torch.tensor([1.0, 2.0, 3.0])
-        print(f"✓ Simple tensor created: {x}")
-        
-        # Check CUDA (but don't fail if not available)
-        if torch.cuda.is_available():
-            print(f"✓ CUDA is available: {torch.cuda.get_device_name(0)}")
-        else:
-            print("ℹ️ CUDA not available, using CPU (this is fine for testing)")
-
-        print("✓ PyTorch test completed successfully!")
-        return {'status': 'success'}
-
+        print(f"Running: {cmd}")
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+        print(f"Exit code: {result.returncode}")
+        if result.stdout:
+            print(f"STDOUT: {result.stdout}")
+        if result.stderr:
+            print(f"STDERR: {result.stderr}")
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print("Command timed out!")
+        return False
     except Exception as e:
-        import traceback
-        print(f"✗ PyTorch test failed: {e}")
-        traceback.print_exc()
-        return {'status': 'error', 'error': str(e)}
+        print(f"Command failed: {e}")
+        return False
+
+def debug_environment():
+    """Debug the environment step by step"""
+    print("=== DEBUGGING PYTORCH INSTALLATION ===")
+    
+    # Test 1: Basic environment
+    print("\n--- Test 1: Basic Environment ---")
+    run_command("python3 --version")
+    run_command("pip --version")
+    run_command("which python3")
+    run_command("which pip")
+    
+    # Test 2: Check available space and memory
+    print("\n--- Test 2: System Resources ---")
+    run_command("df -h")
+    run_command("free -h")
+    
+    # Test 3: Test basic pip functionality
+    print("\n--- Test 3: Basic pip install ---")
+    if run_command("pip install requests"):
+        print("✓ Basic pip install works")
+        run_command("python3 -c \"import requests; print('requests imported successfully')\"")
+    else:
+        print("✗ Basic pip install failed")
+    
+    # Test 4: Try different PyTorch installation methods
+    print("\n--- Test 4: PyTorch Installation Attempts ---")
+    
+    # Method 1: CPU only, minimal
+    print("Trying CPU-only PyTorch...")
+    if run_command("pip install torch --no-cache-dir"):
+        print("✓ PyTorch CPU installation succeeded")
+        if run_command("python3 -c \"import torch; print(f'PyTorch version: {torch.__version__}')\""):
+            print("✓ PyTorch import succeeded")
+            return True
+        else:
+            print("✗ PyTorch import failed")
+    else:
+        print("✗ PyTorch CPU installation failed")
+    
+    # Method 2: Specific CPU index
+    print("Trying PyTorch with specific CPU index...")
+    run_command("pip uninstall torch -y")
+    if run_command("pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir"):
+        print("✓ PyTorch CPU index installation succeeded")
+        if run_command("python3 -c \"import torch; print(f'PyTorch version: {torch.__version__}')\""):
+            print("✓ PyTorch import succeeded")
+            return True
+    
+    # Method 3: Older version
+    print("Trying older PyTorch version...")
+    run_command("pip uninstall torch -y")
+    if run_command("pip install torch==1.13.0 --no-cache-dir"):
+        print("✓ Older PyTorch installation succeeded")
+        if run_command("python3 -c \"import torch; print(f'PyTorch version: {torch.__version__}')\""):
+            print("✓ PyTorch import succeeded")
+            return True
+    
+    print("✗ All PyTorch installation methods failed")
+    return False
 
 def main():
-    print("=== PYTORCH INSTALLATION TEST ===")
+    print("=== PYTORCH INSTALLATION DEBUG ===")
     print(f"Python version: {sys.version}")
     print(f"Working directory: {os.getcwd()}")
     
-    # Parse sleep argument (same as your working script)
+    # Parse sleep argument
     sleep_time = 0
     for i, arg in enumerate(sys.argv):
         if arg == "--sleep" and i + 1 < len(sys.argv):
@@ -60,16 +104,20 @@ def main():
             except ValueError:
                 print(f"Invalid sleep value: {sys.argv[i + 1]}")
     
-    # Run test
-    result = test_pytorch()
-    print(f"\nTest result: {result}")
+    # Run debug
+    success = debug_environment()
+    
+    if success:
+        print("\n✓ PyTorch debugging completed successfully!")
+    else:
+        print("\n✗ PyTorch debugging failed - unable to install PyTorch")
     
     # Sleep
     if sleep_time > 0:
         print(f"Sleeping for {sleep_time} seconds...")
         time.sleep(sleep_time)
     
-    print("Test completed!")
+    print("Debug completed!")
     return 0
 
 if __name__ == "__main__":
