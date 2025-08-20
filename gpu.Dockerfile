@@ -1,23 +1,11 @@
-# Use the same approach as the working TensorFlow setup
-FROM python:3.9-slim
+# Use EXACTLY the same pattern as your working TensorFlow Dockerfile
+FROM python:3.8-slim
 
-# Install system dependencies for CUDA (if needed) and PyTorch
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install only the basic dependencies (like your working TF setup)
+RUN pip install tensorboardX boto3
 
-# Install PyTorch with CUDA support (similar to how the TF script installs TF)
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Install other dependencies
-RUN pip install numpy argparse
-
-# Set working directory
+# Set working directory  
 WORKDIR /app
 
-# Copy training script
+# Copy the script (your TF setup copies to root, let's match that)
 COPY main.gpu.py .
-
-# Set environment variables for proper output
-ENV PYTHONUNBUFFERED=1
