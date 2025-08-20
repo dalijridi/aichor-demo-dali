@@ -1,108 +1,143 @@
+#!/usr/bin/env python3
+"""
+Very simple GPU training test for Vertex AI
+Designed to show clear logs and test GPU functionality
+"""
+import os
+import sys
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import argparse
-import time
-import sys
 
-# Force stdout flushing
-def print_flush(*args, **kwargs):
-    print(*args, **kwargs)
+# Force unbuffered output
+os.environ['PYTHONUNBUFFERED'] = '1'
+
+def log_print(message):
+    """Print with explicit flushing and timestamp"""
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}")
     sys.stdout.flush()
+    sys.stderr.flush()
 
-print_flush("--- Starting Training Script ---")
-
-# --- 1. Check for GPU availability ---
-print_flush("Checking for GPU...")
-print_flush(f"PyTorch version: {torch.__version__}")
-print_flush(f"CUDA version: {torch.version.cuda}")
-
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-    print_flush(f"✅ GPU is available. Using device: {torch.cuda.get_device_name(0)}")
-    print_flush(f"GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
-else:
-    device = torch.device("cpu")
-    print_flush("⚠️ GPU not found. Using CPU.")
-
-# --- 2. Simple Model Definition ---
-class SimpleModel(nn.Module):
-    def __init__(self):
-        super(SimpleModel, self).__init__()
-        self.linear1 = nn.Linear(10, 5)
-        self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(5, 1)
+def main():
+    log_print("🚀 STARTING SIMPLE GPU TRAINING TEST")
+    log_print("="*50)
     
-    def forward(self, x):
-        x = self.linear1(x)
-        x = self.relu(x)
-        x = self.linear2(x)
-        return x
-
-# --- 3. Argument Parsing ---
-try:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs.')
-    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate.')
-    args = parser.parse_args()
-    print_flush(f"Training for {args.epochs} epochs with a learning rate of {args.lr}.")
-except Exception as e:
-    print_flush(f"Error parsing arguments: {e}")
-    sys.exit(1)
-
-# --- 4. Instantiate Model and move to GPU ---
-try:
-    model = SimpleModel().to(device)
-    print_flush("\nModel architecture:")
-    print_flush(model)
+    # 1. Environment Check
+    log_print("📋 ENVIRONMENT CHECK:")
+    log_print(f"   Python version: {sys.version}")
+    log_print(f"   PyTorch version: {torch.__version__}")
+    log_print(f"   CUDA version: {torch.version.cuda}")
+    log_print(f"   Current working directory: {os.getcwd()}")
     
-    # Check if model parameters are on the correct device
-    model_device = next(model.parameters()).device
-    print_flush(f"Model is on device: {model_device}")
-except Exception as e:
-    print_flush(f"Error creating or moving model: {e}")
-    sys.exit(1)
-
-# --- 5. Create Dummy Data and move to GPU ---
-try:
-    X_train = torch.randn(100, 10).to(device)
-    y_train = torch.randn(100, 1).to(device)
-    print_flush(f"Training data is on device: {X_train.device}")
-    print_flush(f"Target data is on device: {y_train.device}")
-except Exception as e:
-    print_flush(f"Error creating training data: {e}")
-    sys.exit(1)
-
-# --- 6. Define Loss and Optimizer ---
-try:
+    # 2. GPU Detection
+    log_print("\n🔍 GPU DETECTION:")
+    if torch.cuda.is_available():
+        gpu_count = torch.cuda.device_count()
+        log_print(f"   ✅ CUDA is available!")
+        log_print(f"   📊 Number of GPUs: {gpu_count}")
+        
+        for i in range(gpu_count):
+            gpu_name = torch.cuda.get_device_name(i)
+            gpu_memory = torch.cuda.get_device_properties(i).total_memory / (1024**3)
+            log_print(f"   🎯 GPU {i}: {gpu_name} ({gpu_memory:.1f} GB)")
+        
+        device = torch.device("cuda:0")
+        log_print(f"   🎯 Using device: {device}")
+    else:
+        log_print("   ❌ CUDA not available, using CPU")
+        device = torch.device("cpu")
+    
+    # 3. Simple Model
+    log_print("\n🧠 CREATING MODEL:")
+    
+    class SimpleNet(nn.Module):
+        def __init__(self):
+            super(SimpleNet, self).__init__()
+            self.fc1 = nn.Linear(100, 50)
+            self.relu = nn.ReLU()
+            self.fc2 = nn.Linear(50, 10)
+            self.fc3 = nn.Linear(10, 1)
+            
+        def forward(self, x):
+            x = self.relu(self.fc1(x))
+            x = self.relu(self.fc2(x))
+            x = self.fc3(x)
+            return x
+    
+    model = SimpleNet().to(device)
+    log_print(f"   ✅ Model created and moved to {device}")
+    log_print(f"   📊 Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    
+    # 4. Create Training Data
+    log_print("\n📊 CREATING TRAINING DATA:")
+    batch_size = 32
+    input_size = 100
+    
+    # Create dummy data
+    X = torch.randn(batch_size, input_size).to(device)
+    y = torch.randn(batch_size, 1).to(device)
+    
+    log_print(f"   ✅ Training data created: {X.shape}")
+    log_print(f"   🎯 Data is on device: {X.device}")
+    
+    # 5. Training Setup
+    log_print("\n⚙️  TRAINING SETUP:")
     criterion = nn.MSELoss()
-    optimizer = optim.SGD(model.parameters(), lr=args.lr)
-    print_flush("Loss function and optimizer initialized successfully.")
-except Exception as e:
-    print_flush(f"Error initializing loss/optimizer: {e}")
-    sys.exit(1)
-
-# --- 7. Simple Training Loop ---
-print_flush("\n--- Starting Training Loop ---")
-try:
-    for epoch in range(args.epochs):
-        model.train()
-        
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    log_print("   ✅ Loss function: MSE Loss")
+    log_print("   ✅ Optimizer: Adam (lr=0.001)")
+    
+    # 6. Training Loop
+    log_print("\n🏋️  STARTING TRAINING:")
+    log_print("-" * 40)
+    
+    epochs = 10
+    for epoch in range(epochs):
         # Forward pass
-        outputs = model(X_train)
-        loss = criterion(outputs, y_train)
-        
-        # Backward pass and optimization
+        model.train()
         optimizer.zero_grad()
+        
+        # Time the forward pass
+        start_time = time.time()
+        outputs = model(X)
+        loss = criterion(outputs, y)
+        
+        # Backward pass
         loss.backward()
         optimizer.step()
         
-        print_flush(f"Epoch [{epoch+1}/{args.epochs}], Loss: {loss.item():.4f}")
-        time.sleep(1)
+        forward_time = time.time() - start_time
         
-except Exception as e:
-    print_flush(f"Error during training: {e}")
-    sys.exit(1)
+        # Log every epoch
+        log_print(f"   Epoch {epoch+1:2d}/{epochs} | Loss: {loss.item():.6f} | Time: {forward_time*1000:.2f}ms")
+        
+        # Small delay to make logs more readable
+        time.sleep(0.5)
+    
+    log_print("-" * 40)
+    
+    # 7. Final GPU Memory Check
+    if torch.cuda.is_available():
+        log_print("\n💾 FINAL GPU MEMORY CHECK:")
+        memory_allocated = torch.cuda.memory_allocated(device) / (1024**2)
+        memory_cached = torch.cuda.memory_reserved(device) / (1024**2)
+        log_print(f"   📊 GPU Memory Allocated: {memory_allocated:.2f} MB")
+        log_print(f"   📊 GPU Memory Cached: {memory_cached:.2f} MB")
+    
+    # 8. Success Message
+    log_print("\n" + "="*50)
+    log_print("🎉 TRAINING COMPLETED SUCCESSFULLY!")
+    log_print("🎉 GPU TEST PASSED!")
+    log_print("="*50)
 
-print_flush("\n--- Training Complete --- ✅")
-print_flush("Script finished successfully!")
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        log_print(f"❌ ERROR: {str(e)}")
+        import traceback
+        log_print("📋 FULL TRACEBACK:")
+        traceback.print_exc()
+        sys.exit(1)
