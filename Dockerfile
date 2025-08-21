@@ -17,7 +17,7 @@ ENV CUDA_LAUNCH_BLOCKING=1
 WORKDIR /app
 
 # Copy the training script
-COPY cloud_logging_script.py .
+COPY main_gpu.py .
 
 # Make script executable
 RUN chmod +x cloud_logging_script.py
