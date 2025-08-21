@@ -1,7 +1,13 @@
-# Use official PyTorch image with CUDA support
+# Use official PyTorch image
 FROM pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
 
-# Set environment variables for better logging
+# Install system utilities for logging
+RUN apt-get update && apt-get install -y \
+    procps \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables for logging
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV NVIDIA_VISIBLE_DEVICES=all
@@ -11,27 +17,43 @@ ENV CUDA_LAUNCH_BLOCKING=1
 WORKDIR /app
 
 # Copy the training script
-COPY main_gpu.py .
+COPY cloud_logging_script.py .
 
 # Make script executable
-RUN chmod +x main_gpu.py
+RUN chmod +x cloud_logging_script.py
 
-# Test that PyTorch is working (CUDA might not be available during build, that's normal)
-RUN python3 -c "import torch; print('PyTorch version:', torch.__version__); print('CUDA available during build:', torch.cuda.is_available()); print('Build completed successfully')"
+# Create comprehensive startup wrapper
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'set -e' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Multi-channel logging function' >> /app/start.sh && \
+    echo 'log_multi() {' >> /app/start.sh && \
+    echo '    echo "[WRAPPER-STDOUT] $1"' >> /app/start.sh && \
+    echo '    echo "[WRAPPER-STDERR] $1" >&2' >> /app/start.sh && \
+    echo '    echo "[WRAPPER-LOG] $(date): $1" >> /tmp/wrapper.log' >> /app/start.sh && \
+    echo '}' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'log_multi "=== CONTAINER STARTUP ==="' >> /app/start.sh && \
+    echo 'log_multi "Timestamp: $(date)"' >> /app/start.sh && \
+    echo 'log_multi "Hostname: $(hostname)"' >> /app/start.sh && \
+    echo 'log_multi "User: $(whoami)"' >> /app/start.sh && \
+    echo 'log_multi "Working dir: $(pwd)"' >> /app/start.sh && \
+    echo 'log_multi "Environment variables:"' >> /app/start.sh && \
+    echo 'env | grep -E "(PYTHON|CUDA|NVIDIA)" | while read line; do log_multi "  $line"; done' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'log_multi "=== NVIDIA-SMI OUTPUT ==="' >> /app/start.sh && \
+    echo 'if nvidia-smi 2>/dev/null; then' >> /app/start.sh && \
+    echo '    log_multi "✅ nvidia-smi successful"' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '    log_multi "⚠️ nvidia-smi not available"' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'log_multi "=== STARTING PYTHON SCRIPT ==="' >> /app/start.sh && \
+    echo 'exec python3 -u cloud_logging_script.py 2>&1 | tee -a /tmp/python_output.log' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
-# Create a startup wrapper script
-RUN echo '#!/bin/bash' > /app/run.sh && \
-    echo 'set -e' >> /app/run.sh && \
-    echo 'echo "=== CONTAINER STARTUP ==="' >> /app/run.sh && \
-    echo 'echo "Timestamp: $(date)"' >> /app/run.sh && \
-    echo 'echo "Running as user: $(whoami)"' >> /app/run.sh && \
-    echo 'echo "Working directory: $(pwd)"' >> /app/run.sh && \
-    echo 'echo "Python path: $(which python3)"' >> /app/run.sh && \
-    echo 'echo "NVIDIA SMI output:"' >> /app/run.sh && \
-    echo 'nvidia-smi || echo "nvidia-smi not available"' >> /app/run.sh && \
-    echo 'echo "=== STARTING TRAINING ==="' >> /app/run.sh && \
-    echo 'exec python3 -u main_gpu.py' >> /app/run.sh && \
-    chmod +x /app/run.sh
+# Test build
+RUN python3 -c "print('✅ Docker build test successful')"
 
 # Default command
-CMD ["/app/run.sh"]
+CMD ["/app/start.sh"]
