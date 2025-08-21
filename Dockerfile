@@ -1,5 +1,5 @@
 # Use official PyTorch image
-FROM pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
 
 # Install system utilities for logging
 RUN apt-get update && apt-get install -y \
