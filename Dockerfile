@@ -20,7 +20,7 @@ WORKDIR /app
 COPY main_gpu.py .
 
 # Make script executable
-RUN chmod +x cloud_logging_script.py
+RUN chmod +x main_gpu.py
 
 # Create comprehensive startup wrapper
 RUN echo '#!/bin/bash' > /app/start.sh && \
@@ -49,7 +49,7 @@ RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'fi' >> /app/start.sh && \
     echo '' >> /app/start.sh && \
     echo 'log_multi "=== STARTING PYTHON SCRIPT ==="' >> /app/start.sh && \
-    echo 'exec python3 -u cloud_logging_script.py 2>&1 | tee -a /tmp/python_output.log' >> /app/start.sh && \
+    echo 'exec python3 -u main_gpu.py 2>&1 | tee -a /tmp/python_output.log' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Test build
