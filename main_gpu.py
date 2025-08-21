@@ -1,125 +1,93 @@
 #!/usr/bin/env python3
-import sys
 import time
-import os
-import logging
+import sys
 import subprocess
+import os
 
-# Force unbuffered output
-os.environ['PYTHONUNBUFFERED'] = '1'
-
-# Configure logging to write to multiple streams
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.StreamHandler(sys.stderr)
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
-def force_log(message):
-    """Multi-channel logging to ensure visibility"""
-    # Method 1: Print to stdout/stderr
-    print(f"[STDOUT] {message}")
-    print(f"[STDERR] {message}", file=sys.stderr)
-    
-    # Method 2: Python logging
-    logger.info(message)
-    
-    # Method 3: Write to file (for debugging)
-    with open('/tmp/training.log', 'a') as f:
-        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
-    
-    # Force flush all streams
+def log_with_flush(msg):
+    print(f"[{time.strftime('%H:%M:%S')}] {msg}")
     sys.stdout.flush()
     sys.stderr.flush()
-    
-    # Method 4: Echo to system (visible in container logs)
-    try:
-        subprocess.run(['echo', f"[ECHO] {message}"], check=False)
-    except:
-        pass
 
-def main():
-    force_log("🚀 STARTING VERTEX AI LOGGING TEST")
-    force_log("=" * 60)
+log_with_flush("🚀 GPU RUNTIME DETECTION TEST")
+log_with_flush("=" * 50)
+
+# Check environment
+log_with_flush("🔍 CHECKING ENVIRONMENT:")
+log_with_flush(f"   NVIDIA_VISIBLE_DEVICES: {os.getenv('NVIDIA_VISIBLE_DEVICES', 'not set')}")
+
+# Check for GPU devices
+log_with_flush("\n🔍 CHECKING GPU DEVICES:")
+try:
+    result = subprocess.run(['ls', '/dev/'], capture_output=True, text=True)
+    gpu_devices = [line for line in result.stdout.split('\n') if 'nvidia' in line.lower()]
+    if gpu_devices:
+        log_with_flush(f"   ✅ Found GPU devices: {gpu_devices}")
+    else:
+        log_with_flush("   ❌ No GPU devices found in /dev/")
+except Exception as e:
+    log_with_flush(f"   ❌ Error checking devices: {e}")
+
+# Check nvidia-smi
+log_with_flush("\n🔍 CHECKING NVIDIA-SMI:")
+try:
+    result = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=10)
+    if result.returncode == 0:
+        log_with_flush("   ✅ nvidia-smi successful!")
+        lines = result.stdout.split('\n')[:10]  # First 10 lines
+        for line in lines:
+            if line.strip():
+                log_with_flush(f"   {line}")
+    else:
+        log_with_flush(f"   ❌ nvidia-smi failed: {result.stderr}")
+except Exception as e:
+    log_with_flush(f"   ❌ nvidia-smi error: {e}")
+
+# Check PyTorch
+log_with_flush("\n🔍 CHECKING PYTORCH:")
+try:
+    import torch
+    log_with_flush(f"   ✅ PyTorch version: {torch.__version__}")
+    log_with_flush(f"   🎯 CUDA available: {torch.cuda.is_available()}")
     
-    # Environment info
-    force_log("📋 ENVIRONMENT INFO:")
-    force_log(f"   Python: {sys.version}")
-    force_log(f"   Working dir: {os.getcwd()}")
-    force_log(f"   User: {os.getenv('USER', 'unknown')}")
-    
-    # Test PyTorch
-    force_log("\n🧠 TESTING PYTORCH:")
-    try:
-        import torch
-        force_log(f"   ✅ PyTorch version: {torch.__version__}")
-        force_log(f"   🔍 CUDA available: {torch.cuda.is_available()}")
-        
-        if torch.cuda.is_available():
-            force_log(f"   🎯 GPU count: {torch.cuda.device_count()}")
-            for i in range(torch.cuda.device_count()):
-                gpu_name = torch.cuda.get_device_name(i)
-                force_log(f"   🎯 GPU {i}: {gpu_name}")
-        else:
-            force_log("   ⚠️  Running on CPU")
-    except Exception as e:
-        force_log(f"   ❌ PyTorch error: {e}")
-    
-    # Simple computation test
-    force_log("\n🧮 TESTING COMPUTATION:")
-    try:
-        import torch
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        force_log(f"   🎯 Using device: {device}")
-        
-        # Simple tensor operations
-        x = torch.randn(100, 100).to(device)
-        y = torch.randn(100, 100).to(device)
+    if torch.cuda.is_available():
+        log_with_flush(f"   🎯 CUDA version: {torch.version.cuda}")
+        log_with_flush(f"   🎯 GPU count: {torch.cuda.device_count()}")
+        for i in range(torch.cuda.device_count()):
+            name = torch.cuda.get_device_name(i)
+            memory = torch.cuda.get_device_properties(i).total_memory / (1024**3)
+            log_with_flush(f"   🎯 GPU {i}: {name} ({memory:.1f} GB)")
+            
+        # Test GPU computation
+        log_with_flush("\n🧮 TESTING GPU COMPUTATION:")
+        device = torch.device("cuda:0")
+        x = torch.randn(1000, 1000).to(device)
+        y = torch.randn(1000, 1000).to(device)
         
         start_time = time.time()
         z = torch.matmul(x, y)
-        compute_time = time.time() - start_time
+        gpu_time = time.time() - start_time
         
-        force_log(f"   ✅ Matrix multiplication completed")
-        force_log(f"   ⏱️  Compute time: {compute_time*1000:.2f}ms")
-        force_log(f"   📊 Result shape: {z.shape}")
-        force_log(f"   📊 Result mean: {z.mean().item():.6f}")
+        log_with_flush(f"   ✅ GPU matrix multiplication successful!")
+        log_with_flush(f"   ⏱️  GPU compute time: {gpu_time*1000:.2f}ms")
         
-    except Exception as e:
-        force_log(f"   ❌ Computation error: {e}")
-    
-    # Progress simulation
-    force_log("\n🏃 SIMULATING TRAINING PROGRESS:")
-    for i in range(10):
-        progress = (i + 1) / 10 * 100
-        force_log(f"   Step {i+1}/10 - Progress: {progress:5.1f}%")
-        time.sleep(1)
-    
-    # Final status
-    force_log("\n" + "=" * 60)
-    force_log("🎉 VERTEX AI LOGGING TEST COMPLETED SUCCESSFULLY!")
-    force_log("🎉 If you see this message, logging is working!")
-    force_log("=" * 60)
-    
-    # Show log file content
-    try:
-        with open('/tmp/training.log', 'r') as f:
-            content = f.read()
-        force_log(f"\n📄 LOG FILE CONTENT ({len(content)} chars):")
-        force_log(content[:500] + "..." if len(content) > 500 else content)
-    except:
-        force_log("📄 Could not read log file")
+    else:
+        log_with_flush("   ⚠️  CUDA not available - running on CPU")
+        
+        # Test CPU computation for comparison
+        x = torch.randn(1000, 1000)
+        y = torch.randn(1000, 1000)
+        
+        start_time = time.time()
+        z = torch.matmul(x, y)
+        cpu_time = time.time() - start_time
+        
+        log_with_flush(f"   ✅ CPU matrix multiplication successful!")
+        log_with_flush(f"   ⏱️  CPU compute time: {cpu_time*1000:.2f}ms")
+        
+except Exception as e:
+    log_with_flush(f"   ❌ PyTorch error: {e}")
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        force_log(f"❌ FATAL ERROR: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+log_with_flush("\n" + "=" * 50)
+log_with_flush("🎉 GPU DETECTION TEST COMPLETED!")
+log_with_flush("=" * 50)
