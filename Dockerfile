@@ -1,6 +1,7 @@
 # Use an official TensorFlow image with GPU support
 # This image includes Python, CUDA, and cuDNN, all pre-configured.
-FROM tensorflow/tensorflow:2.13.0-gpu
+#FROM tensorflow/tensorflow:2.13.0-gpu
+FROM gcr.io/deeplearning-platform-release/tf-gpu.2.13-cu118:latest
 
 # Set the working directory in the container
 WORKDIR /app
