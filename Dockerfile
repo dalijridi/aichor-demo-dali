@@ -6,6 +6,6 @@ FROM tensorflow/tensorflow:2.13.0-gpu
 WORKDIR /app
 
 # Copy the Python script into the container
-COPY main_tf.py .
+COPY main_gpu.py .
 
 # No ENTRYPOINT is needed, as the command will be provided by the manifest
