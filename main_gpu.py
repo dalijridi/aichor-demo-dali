@@ -1,93 +1,67 @@
-#!/usr/bin/env python3
+import tensorflow as tf
+import numpy as np
+import argparse
 import time
 import sys
-import subprocess
 import os
 
-def log_with_flush(msg):
-    print(f"[{time.strftime('%H:%M:%S')}] {msg}")
-    sys.stdout.flush()
-    sys.stderr.flush()
+print("--- Starting TensorFlow Training Script ---")
+# Ensure logs are sent immediately without buffering
+os.environ['PYTHONUNBUFFERED'] = '1'
 
-log_with_flush("🚀 GPU RUNTIME DETECTION TEST")
-log_with_flush("=" * 50)
+# --- 1. Check for GPU availability ---
+print("Checking for GPU...")
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.list_logical_devices('GPU')
+        print(f"✅ GPU is available. Using {len(gpus)} Physical GPUs, {len(logical_gpus)} Logical GPUs.")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
+else:
+    print("⚠️ GPU not found. Using CPU.")
 
-# Check environment
-log_with_flush("🔍 CHECKING ENVIRONMENT:")
-log_with_flush(f"   NVIDIA_VISIBLE_DEVICES: {os.getenv('NVIDIA_VISIBLE_DEVICES', 'not set')}")
+# --- 2. Simple Model Definition using Keras ---
+def create_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(10, activation='relu', input_shape=(20,)),
+        tf.keras.layers.Dense(5, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    return model
 
-# Check for GPU devices
-log_with_flush("\n🔍 CHECKING GPU DEVICES:")
-try:
-    result = subprocess.run(['ls', '/dev/'], capture_output=True, text=True)
-    gpu_devices = [line for line in result.stdout.split('\n') if 'nvidia' in line.lower()]
-    if gpu_devices:
-        log_with_flush(f"   ✅ Found GPU devices: {gpu_devices}")
-    else:
-        log_with_flush("   ❌ No GPU devices found in /dev/")
-except Exception as e:
-    log_with_flush(f"   ❌ Error checking devices: {e}")
+# --- 3. Argument Parsing ---
+parser = argparse.ArgumentParser()
+parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs.')
+parser.add_argument('--lr', type=float, default=0.01, help='Learning rate.')
+args = parser.parse_args()
 
-# Check nvidia-smi
-log_with_flush("\n🔍 CHECKING NVIDIA-SMI:")
-try:
-    result = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=10)
-    if result.returncode == 0:
-        log_with_flush("   ✅ nvidia-smi successful!")
-        lines = result.stdout.split('\n')[:10]  # First 10 lines
-        for line in lines:
-            if line.strip():
-                log_with_flush(f"   {line}")
-    else:
-        log_with_flush(f"   ❌ nvidia-smi failed: {result.stderr}")
-except Exception as e:
-    log_with_flush(f"   ❌ nvidia-smi error: {e}")
+print(f"Training for {args.epochs} epochs with a learning rate of {args.lr}.")
 
-# Check PyTorch
-log_with_flush("\n🔍 CHECKING PYTORCH:")
-try:
-    import torch
-    log_with_flush(f"   ✅ PyTorch version: {torch.__version__}")
-    log_with_flush(f"   🎯 CUDA available: {torch.cuda.is_available()}")
-    
-    if torch.cuda.is_available():
-        log_with_flush(f"   🎯 CUDA version: {torch.version.cuda}")
-        log_with_flush(f"   🎯 GPU count: {torch.cuda.device_count()}")
-        for i in range(torch.cuda.device_count()):
-            name = torch.cuda.get_device_name(i)
-            memory = torch.cuda.get_device_properties(i).total_memory / (1024**3)
-            log_with_flush(f"   🎯 GPU {i}: {name} ({memory:.1f} GB)")
-            
-        # Test GPU computation
-        log_with_flush("\n🧮 TESTING GPU COMPUTATION:")
-        device = torch.device("cuda:0")
-        x = torch.randn(1000, 1000).to(device)
-        y = torch.randn(1000, 1000).to(device)
-        
-        start_time = time.time()
-        z = torch.matmul(x, y)
-        gpu_time = time.time() - start_time
-        
-        log_with_flush(f"   ✅ GPU matrix multiplication successful!")
-        log_with_flush(f"   ⏱️  GPU compute time: {gpu_time*1000:.2f}ms")
-        
-    else:
-        log_with_flush("   ⚠️  CUDA not available - running on CPU")
-        
-        # Test CPU computation for comparison
-        x = torch.randn(1000, 1000)
-        y = torch.randn(1000, 1000)
-        
-        start_time = time.time()
-        z = torch.matmul(x, y)
-        cpu_time = time.time() - start_time
-        
-        log_with_flush(f"   ✅ CPU matrix multiplication successful!")
-        log_with_flush(f"   ⏱️  CPU compute time: {cpu_time*1000:.2f}ms")
-        
-except Exception as e:
-    log_with_flush(f"   ❌ PyTorch error: {e}")
+# --- 4. Instantiate Model ---
+model = create_model()
+print("\nModel architecture:")
+model.summary()
 
-log_with_flush("\n" + "=" * 50)
-log_with_flush("🎉 GPU DETECTION TEST COMPLETED!")
-log_with_flush("=" * 50)
+# --- 5. Create Dummy Data ---
+X_train = np.random.rand(100, 20).astype(np.float32)
+y_train = np.random.rand(100, 1).astype(np.float32)
+print(f"\nCreated training data with shape: {X_train.shape}")
+
+# --- 6. Define Loss and Optimizer ---
+optimizer = tf.keras.optimizers.Adam(learning_rate=args.lr)
+model.compile(optimizer=optimizer, loss='mean_squared_error')
+
+# --- 7. Simple Training Loop using model.fit() ---
+print("\n--- Starting Training Loop ---")
+for epoch in range(args.epochs):
+    print(f"\nEpoch [{epoch+1}/{args.epochs}]")
+    # Keras's model.fit handles the training loop, loss calculation, and backpropagation
+    model.fit(X_train, y_train, epochs=1, batch_size=32, verbose=2)
+    time.sleep(2) # Adding a small delay to make logs easier to follow
+
+print("\n--- Training Complete --- ✅")
