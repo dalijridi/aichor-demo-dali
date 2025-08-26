@@ -7,8 +7,8 @@ FROM europe-docker.pkg.dev/vertex-ai/training/tf-gpu.2-13.py310
 WORKDIR /app
 
 # Copy the Python script into the container
-#COPY main_gpu.py .
+COPY main_gpu.py .
 #debug script to test logging
-COPY diagnostic_script.py .
+#COPY diagnostic_script.py .
 
 # No ENTRYPOINT is needed, as the command will be provided by the manifest
