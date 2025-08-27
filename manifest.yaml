@@ -9,12 +9,8 @@ builder:
 spec:
   operator: vertexai
   image: simple-test
-  #command: "python3 -u test-pytorch.py --sleep=10" #gpu training
-  #command: "/app/start.sh" #new gpu training
-  #command: "echo 'Container works' > /tmp/output.log 2>&1 && cat /tmp/output.log && pwd && whoami"
-  #command: "find /opt -name 'python*' -type f 2>/dev/null | head -5"
-  #command: "python3 -u main_gpu.py --epochs=10 --lr=0.001" #non gpu training
-  command: "python -u main_gpu.py"
+  command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
+  #command: "python -u main_gpu.py"
 
   types:
     workerPoolSpecs:
