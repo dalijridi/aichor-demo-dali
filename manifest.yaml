@@ -9,8 +9,8 @@ builder:
 spec:
   operator: vertexai
   image: simple-test
-  command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
-  #command: "python -u main_gpu.py"
+  #command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
+  command: "python -u main_gpu.py"
 
   types:
     workerPoolSpecs:
