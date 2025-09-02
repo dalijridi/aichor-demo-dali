@@ -9,13 +9,13 @@ builder:
 spec:
   operator: vertexai
   image: simple-test
-  #command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
-  command: "python -u main_gpu.py"
+  command: "python3 -u main.py --operator=tf  --sleep=20" #non gpu training
+  #command: "python -u main_gpu.py"
 
   types:
     workerPoolSpecs:
     - machineSpec:
         machineType: n1-standard-8
-        acceleratorType: NVIDIA_TESLA_T4 #gpu training
-        acceleratorCount: 1 #gpu training
+        #acceleratorType: NVIDIA_TESLA_T4 #gpu training
+        #acceleratorCount: 1 #gpu training
       replicaCount: 1
