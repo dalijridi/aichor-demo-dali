@@ -1,32 +1,52 @@
-import argparse
-import time
+#!/usr/bin/env nextflow
 
-from src.operators.jax import jaxop
-from src.operators.ray import rayop
-from src.operators.tf import tfop
+/*
+ * Copyright (c) 2018, Centre for Genomic Regulation (CRG).
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-from src.utils.tensorboard import dummy_tb_write
+ /*
+  * author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
+  */
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='AIchor Smoke test on any operator')
-    parser.add_argument("--operator", type=str, default="tf", choices=["ray", "jax", "tf"],help="operator name")
-    parser.add_argument("--sleep", type=int, default="0", help="sleep time in seconds")
-    parser.add_argument("--tb-write", type=bool, default=False, help="test write to tensorboard")
+process foo {
+  output:
+  path 'foo.txt', optional: true
 
-    args = parser.parse_args()
+  script:
+  '''
+  if [[ $(( ( RANDOM % 2 ) )) == 0 ]]; then
+    echo Hello world > foo.txt
+  fi
+  '''
+}
 
-    print(f"using {args.operator} operator")
+process bar {
+  input:
+  path '*'
+  script:
+  '''
+  cat foo.txt
+  '''
+}
 
-    if args.operator == "ray":
-        rayop()
-    elif args.operator == "jax":
-        jaxop()
-    elif args.operator == "tf":
-        tfop()
-    
-    if args.tb_write:
-        dummy_tb_write()
-    
-    if args.sleep > 0:
-        print(f"sleeping for {args.sleep}s before exiting")
-        time.sleep(args.sleep)
+workflow {
+  foo | bar
+}
