@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: cd /mnt/shared && echo $JAVA_HOME && echo $PATH && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ command: cd /mnt/shared && echo $JAVA_HOME && echo $PATH && nextflow run process_outputs.nf -with-report
  types:
   job:
    ntasks: 1
