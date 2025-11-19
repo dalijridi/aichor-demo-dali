@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: whoami && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
+ command: echo $JAVA_HOME && echo $PATH && nextflow run process_outputs.nf -with-report $AICHOR_OUTPUT_BUCKET_NEXTFLOW_PATH
  types:
   job:
    ntasks: 1
