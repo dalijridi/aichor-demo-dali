@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: sbatch --wrap="hostname"
+ command: cd /mnt/shared && echo $JAVA_HOME && echo $PATH && echo $NXF_HOME && nextflow run process_outputs.nf -with-report
  types:
   job:
    ntasks: 1
