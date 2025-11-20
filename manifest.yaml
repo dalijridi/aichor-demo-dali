@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: REPO_DIR=$(pwd) && echo $REPO_DIR && ls -la && nextflow run ${REPO_DIR}/process_outputs.nf -with-report
+ command: chmod -R 777 . && nextflow run process_outputs.nf -with-report
  types:
   job:
    ntasks: 1
