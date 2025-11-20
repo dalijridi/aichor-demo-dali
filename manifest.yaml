@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: echo $JAVA_HOME && echo $PATH && echo $NXF_HOME && nextflow run process_outputs.nf -work-dir /mnt/shared/work -with-report
+ command: echo $JAVA_HOME && echo $PATH && echo $NXF_HOME && REPO_DIR=$(pwd) && cd /mnt/shared && nextflow run ${REPO_DIR}/process_outputs.nf -with-report
  types:
   job:
    ntasks: 1
