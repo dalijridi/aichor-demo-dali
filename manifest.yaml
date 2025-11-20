@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: chmod -R 777 . && nextflow run process_outputs.nf -with-report
+ command: nextflow run process_outputs.nf -with-report
  types:
   job:
    ntasks: 1
