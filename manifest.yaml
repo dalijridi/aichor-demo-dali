@@ -1,7 +1,7 @@
 kind: AIchorManifest
 spec:
  operator: slurm
- command: ls -la && nextflow run process_outputs.nf -with-report 
+ command: echo NXF_HOME && echo $NXF_HOME && nextflow run process_outputs.nf
  types:
   job:
    ntasks: 1
