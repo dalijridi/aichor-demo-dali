@@ -3,35 +3,40 @@ apiVersion: 0.2.2
 
 builder:
   image: image
-  context: pytorch-demo
   dockerfile: ./Dockerfile
-
+  context: .
+  
 spec:
-  operator: pytorch
-  image: image
-  command: "python3 src/main.py"
-
+  operator: jobset   
+  image: image 
+  command: "python3 -u main.py" 
+ 
   tensorboard:
     enabled: true
-
+  #   usePVC:
+  #     enabled: true
+  #     name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
+  
+  # storage:
+  #   attachExistingPVCs:
+  #     - name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
+  #       mountPoint: "/mnt/azpvcone"
+  
   types:
-    Master:
+    master:
       count: 1
       resources:
-        cpus: 8
-        ramRatio: 4
+        cpus: 1
+        ramRatio: 2
+        shmSizeGB: 0
         accelerators: # optional
           gpu:
-            count: 1
+            count: 0
             type: gpu
-            product: nvidia-tesla-t4
-    Worker:
-      count: 1
-      resources:
-        cpus: 8
-        ramRatio: 4
-        accelerators: # optional
-          gpu:
-            count: 1
-            type: gpu
-            product: nvidia-tesla-t4
+            product: nvidia-tesla-t4 
+
+    # worker-1:
+    #   count: 1
+    #   resources:
+    #     cpus: 1
+    #     ramRatio: 2
