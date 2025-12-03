@@ -3,7 +3,7 @@ apiVersion: 0.2.2
 
 builder:
   image: image
-  dockerfile: ../../Dockerfile
+  dockerfile: Dockerfile
   context: ../..
   
 spec:
@@ -13,14 +13,6 @@ spec:
  
   tensorboard:
     enabled: true
-  #   usePVC:
-  #     enabled: true
-  #     name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
-  
-  # storage:
-  #   attachExistingPVCs:
-  #     - name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
-  #       mountPoint: "/mnt/azpvcone"
   
   types:
     master:
@@ -33,10 +25,4 @@ spec:
           gpu:
             count: 0
             type: gpu
-            product: nvidia-tesla-t4 
-
-    # worker-1:
-    #   count: 1
-    #   resources:
-    #     cpus: 1
-    #     ramRatio: 2
+            product: nvidia-tesla-t4
