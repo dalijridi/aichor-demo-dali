@@ -12,7 +12,7 @@ spec:
   command: "python3 -u main-dali.py" 
  
   tensorboard:
-    enabled: true
+    enabled: false
   
   types:
     master:
