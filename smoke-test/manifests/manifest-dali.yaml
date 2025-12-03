@@ -1,10 +1,10 @@
 kind: AIchorManifest
-apiVersion: 0.2.2
+apiVersion: 0.2.3
 
 builder:
   image: image
-  dockerfile: Dockerfile
-  context: ../..
+  dockerfile: ./Dockerfile
+  context: .
   
 spec:
   operator: jobset   
