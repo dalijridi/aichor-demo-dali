@@ -9,7 +9,7 @@ builder:
 spec:
   operator: jobset   
   image: image 
-  command: "python3 -u main.py" 
+  command: "python3 -u main-dali.py" 
  
   tensorboard:
     enabled: true
