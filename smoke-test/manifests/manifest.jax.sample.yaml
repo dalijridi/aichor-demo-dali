@@ -3,8 +3,8 @@ apiVersion: 0.2.2
 
 builder:
   image: image
-  context: smoke-test # smoke-test folder
   dockerfile: ./build/Dockerfile
+  context: .
 
 spec:
   operator: jax
@@ -13,12 +13,26 @@ spec:
 
   tensorboard:
     enabled: true
+  storage:
+    #attachExistingPVCs:
+    #  - name: pvc-14477373-5991-4ae6-8bfa-7a9c8d11f85d
+    #    mountPoint: /mnt/pvc-14477373-5991-4ae6-8bfa-7a9c8d11f85d
+     
+    sharedVolume:
+      mountPoint: "/mnt/shared"
+      sizeGB: 1
+      storageClass: efs-sc
+      accessMode: ReadWriteOnce 
 
   types:
-    Worker:
+    worker:
       count: 1
       resources:
         cpus: 1
         ramRatio: 2
         shmSizeGB: 0
-
+        accelerators: # optional
+          gpu:
+            count: 0
+            type: gpu
+            product: nvidia-tesla-t4
