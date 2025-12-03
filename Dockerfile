@@ -4,5 +4,5 @@ RUN pip install tensorboardX boto3
 
 WORKDIR /app
 COPY ./src ./src
-COPY main.py .
-COPY main-dali.py .
+COPY ./smoke-test/main.py .
+COPY ./smoke-test/main-dali.py .
