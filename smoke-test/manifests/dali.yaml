@@ -7,22 +7,19 @@ builder:
   context: .
   
 spec:
-  operator: jobset   
+  operator: pytorch
+  restartPolicy:
+    backoffLimit: 5
   image: image 
-  command: "python3 -u main-dali.py" 
+  command: "python3 -u main-dali.py --operator=jobset --sleep=300"
  
   tensorboard:
     enabled: false
   
   types:
-    master:
-      count: 1
+    worker:
+      count: 2
       resources:
         cpus: 1
         ramRatio: 2
         shmSizeGB: 0
-        accelerators: # optional
-          gpu:
-            count: 0
-            type: gpu
-            product: nvidia-tesla-t4
