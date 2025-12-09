@@ -36,4 +36,4 @@ spec:
             type: gpu
             product: nvidia-tesla-t4
 
-engineName: eng-dali
+engineName: eng-dali-d6dee5bf122e4a67
