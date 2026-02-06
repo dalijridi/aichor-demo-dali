@@ -19,4 +19,3 @@ spec:
         #acceleratorType: NVIDIA_TESLA_T4 #gpu training
         #acceleratorCount: 1 #gpu training
       replicaCount: 1
-
