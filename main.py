@@ -1,59 +1,35 @@
-import os
+import argparse
 import time
-import glob as globmod
-from urllib.parse import urlparse
+import os
 
-import boto3
-from tensorboardX import SummaryWriter
+from src.operators.jax import jaxop
+from src.operators.ray import rayop
+from src.operators.tf import tfop
+from src.operators.pytorch import pytorchop
+from src.operators.xgboost import xgboostop
+from src.operators.jobset import jobsetop
 
-LOCAL_TB_DIR = "/tmp/tensorboard_logs"
-
-
-def upload_dir_to_s3(local_dir, s3_url):
-    parsed = urlparse(s3_url)
-    bucket = parsed.netloc
-    prefix = parsed.path.lstrip("/")
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL") or os.getenv("CEPH_AWS_ENDPOINT_URL")
-    s3 = boto3.client("s3", endpoint_url=endpoint_url)
-    for filepath in globmod.glob(os.path.join(local_dir, "**", "*"), recursive=True):
-        if os.path.isfile(filepath):
-            key = prefix + os.path.relpath(filepath, local_dir)
-            s3.upload_file(filepath, bucket, key)
-            print(f"Uploaded {filepath} -> s3://{bucket}/{key}")
-
-
-def aichor_write_tensorboard():
-    tb_remote_path = os.getenv("AICHOR_TENSORBOARD_PATH") or os.getenv("AICHOR_LOGS_PATH")
-    print(f"### Remote path: {tb_remote_path}")
-
-    writer = SummaryWriter(LOCAL_TB_DIR)
-    for step, val in enumerate([0.31, 0.28, 0.24, 0.20, 0.18], start=5):
-        writer.add_scalar("demo/loss", val, step)
-        time.sleep(1)
-    writer.flush()
-    writer.close()
-
-    upload_dir_to_s3(LOCAL_TB_DIR, tb_remote_path)
-    print("### TensorBoard logs uploaded to", tb_remote_path)
-
-
-def print_test():
-    # do math multiplications and then print test
-
-    for i in range(10):
-        a = i * 2
-        b = i * 3
-        c = a + b
-        print(f"Test {i}: {c}")
-
-    
-
-def main():
-    aichor_write_tensorboard()
-
-    print_test()
-
-    time.sleep(1800)
+OPERATOR_TABLE = {
+    "ray": rayop,
+    "kuberay": rayop,
+    "tf": tfop,
+    "jax": jaxop,
+    "pytorch": pytorchop,
+    "xgboost": xgboostop,
+    "jobset": jobsetop
+}
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='AIchor Smoke test on any operator')
+    parser.add_argument("--operator", type=str, default="tf", choices=OPERATOR_TABLE.keys(),help="operator name")
+    parser.add_argument("--sleep", type=int, default="0", help="sleep time in seconds")
+    parser.add_argument("--tb-write", type=bool, default=False, help="test write to tensorboard")
+
+    args = parser.parse_args()
+
+    print(f"using {args.operator} operator")
+    OPERATOR_TABLE[args.operator](args.tb_write)
+    print(os.environ.get("TEST_KEY"))
+    if args.sleep > 0:
+        print(f"sleeping for {args.sleep}s before exiting")
+        time.sleep(args.sleep)
