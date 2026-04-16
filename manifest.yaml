@@ -1,37 +1,32 @@
-kind: AIchorManifest
-apiVersion: 0.2.3   
-     
-builder:   
+kind: AIchorManifest 
+apiVersion: 0.2.2
+       
+builder:            
   image: image     
-  dockerfile: ./Dockerfile     
-  context: .
-      
-spec:   
-  operator: jobset       
-  image: image
-  command: "python3 -u main.py"      
+  dockerfile: ./build/ray.Dockerfile      
+  context: .      
      
-  tensorboard:      
-    enabled: true   
-  #   usePVC:  
-  #     enabled: true
-  #     name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
-  
-  # storage:
-  #   attachExistingPVCs:
-  #     - name: "az-prjtb11-5de4098cb8b3459d-azpvc-1-d09842db6f6f4cc7"
-  #       mountPoint: "/mnt/azpvcone"
-  
+spec:   
+  operator: kuberay  
+  image: image 
+  command: "python3 -u main.py --operator=kuberay --sleep=300 --tb-write=True"
+
+  debug:
+    jupyter: false
+
+  tensorboard:
+    enabled: true
+
   types:
-    master:
-      count: 1
+    Head:
       resources:
         cpus: 1
-        ramRatio: 2
-        shmSizeGB: 0
-        accelerators: # optional
-          gpu:
-            count: 0
-            type: gpu
-            product: nvidia-tesla-t4 
+        ramRatio: 1
 
+    Workers:
+      - name: cpu-workers
+        count: 1
+        resources:
+          cpus: 1
+          ramRatio: 1
+          shmSizeGB: 0
