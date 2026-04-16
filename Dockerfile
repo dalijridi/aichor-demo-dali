@@ -1,14 +1,8 @@
-FROM python:3.12-slim
+FROM rayproject/ray:2.23.0-cpu
 
-RUN pip install tensorboardX boto3
+COPY build/requirements.txt .
+RUN pip install -r requirements.txt
 
 WORKDIR /app
-COPY main.py . 
-
-
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     echo "CACHE TEST $(date)" > /root/.cache/uv/test.txt && \
-#     cat /root/.cache/uv/test.txt
- 
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     cat /root/.cache/uv/test.txt
+COPY ./src ./src
+COPY main.py .
