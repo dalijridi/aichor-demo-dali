@@ -13,6 +13,7 @@ spec:
      
   tensorboard:      
     enabled: true
+    outputPath: my-data
     #customStorage:
       #enabled: true
       #folderPath: tb-data-0506
