@@ -2,6 +2,7 @@ import os
 import sys
 import time
 
+
 def main():
     print("=== START ===", flush=True)
 
@@ -12,7 +13,6 @@ def main():
         print("ERROR: AICHOR_LOGS_PATH not set", flush=True)
         sys.exit(1)
 
-    # Wait for GCS Fuse mount to be ready
     mount = "/mnt/tensorboard"
     for i in range(30):
         try:
@@ -23,33 +23,36 @@ def main():
             print(f"Waiting for mount ({i}s): {e}", flush=True)
             time.sleep(1)
 
-    # Write a plain file first to confirm the mount works
-    test_file = os.path.join(tb_path, "test.txt")
-    try:
-        os.makedirs(tb_path, exist_ok=True)
-        print(f"makedirs OK: {tb_path}", flush=True)
-        with open(test_file, "w") as f:
-            f.write("hello\n")
-        print(f"plain file write OK: {test_file}", flush=True)
-    except Exception as e:
-        print(f"ERROR writing plain file: {e}", flush=True)
-        sys.exit(1)
+    os.makedirs(tb_path, exist_ok=True)
 
-    # Write tensorboard events
-    try:
-        from tensorboardX import SummaryWriter
-        writer = SummaryWriter(tb_path)
-        for step, val in enumerate([0.31, 0.28, 0.24, 0.20, 0.18], start=1):
-            writer.add_scalar("demo/loss", val, step)
-            print(f"wrote step {step}", flush=True)
-        writer.flush()
-        writer.close()
-        print("tensorboard write OK", flush=True)
-    except Exception as e:
-        print(f"ERROR writing tensorboard: {e}", flush=True)
+    # Write a 2Gi file in 256 MB chunks to stay within memory
+    target_bytes = 2 * 1024 ** 3
+    chunk = b"x" * (256 * 1024 ** 2)
+    written = 0
+    large_file = os.path.join(tb_path, "large_test_file.bin")
 
-    print("=== sleeping 1800s ===", flush=True)
-    time.sleep(1800)
+    print(f"Writing {target_bytes / 1024**3:.1f} GiB to {large_file} ...", flush=True)
+    with open(large_file, "wb") as f:
+        while written < target_bytes:
+            f.write(chunk)
+            written += len(chunk)
+            print(f"  {written / 1024**3:.2f} GiB written", flush=True)
+
+    actual = os.path.getsize(large_file)
+    print(f"Done. File size on disk: {actual / 1024**3:.2f} GiB", flush=True)
+
+    # Also write tensorboard events
+    from tensorboardX import SummaryWriter
+    writer = SummaryWriter(tb_path)
+    for step in range(5):
+        writer.add_scalar("demo/loss", 1.0 / (step + 1), step)
+    writer.flush()
+    writer.close()
+    print("Tensorboard events written", flush=True)
+
+    print("=== sleeping 600s ===", flush=True)
+    time.sleep(600)
+
 
 if __name__ == "__main__":
     main()
