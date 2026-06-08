@@ -13,7 +13,7 @@ spec:
      
   tensorboard:      
     enabled: true
-    outputPath: big-data
+    outputPath: nocustom
     #customStorage:
       #enabled: true
   #   usePVC:  
