@@ -103,7 +103,7 @@ def main():
         print(f"Tensorboard events write failed: {e}", flush=True)
 
     print("=== sleeping 600s ===", flush=True)
-    time.sleep(600)
+    time.sleep(60)
 
 
 if __name__ == "__main__":
