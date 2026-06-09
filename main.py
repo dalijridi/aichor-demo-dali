@@ -102,7 +102,7 @@ def main():
     except Exception as e:
         print(f"Tensorboard events write failed: {e}", flush=True)
 
-    print("=== sleeping 600s ===", flush=True)
+    print("=== sleeping 60s ===", flush=True)
     time.sleep(60)
 
 
