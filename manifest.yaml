@@ -13,7 +13,7 @@ spec:
      
   tensorboard:      
     enabled: true
-    outputPath: 0906
+    outputPath: 1506
     customStorage:
       enabled: true
   #   usePVC:  
