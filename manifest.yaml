@@ -1,32 +1,29 @@
-kind: AIchorManifest 
+kind: AIchorManifest
 apiVersion: 0.2.2
-       
-builder:            
-  image: image     
-  dockerfile: ./Dockerfile    
-  context: .      
-     
-spec:   
-  operator: kuberay  
-  image: image 
-  command: "python3 -u main.py --operator=kuberay --sleep=300 --tb-write=True"
 
-  debug:
-    jupyter: false
+builder:
+  image: image
+  context: smoke-test # smoke-test folder
+  dockerfile: ./build/Dockerfile
+
+spec:
+  operator: jobset
+  image: image
+  command: "python3 -u main.py --operator=jobset --sleep=300 --tb-write=True"
 
   tensorboard:
     enabled: true
 
   types:
-    Head:
+    master:
+      count: 1
       resources:
         cpus: 1
-        ramRatio: 1
-
-    Workers:
-      - name: cpu-workers
-        count: 1
-        resources:
-          cpus: 1
-          ramRatio: 1
-          shmSizeGB: 0
+        ramRatio: 2
+        shmSizeGB: 0
+    worker:
+      count: 1
+      resources:
+        cpus: 1
+        ramRatio: 2
+        shmSizeGB: 0
