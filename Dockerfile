@@ -1,14 +1,10 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
-RUN pip install tensorboardX boto3
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
-COPY main.py . 
 
+RUN pip install "delta-sharing==1.3.3"
 
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     echo "CACHE TEST $(date)" > /root/.cache/uv/test.txt && \
-#     cat /root/.cache/uv/test.txt
- 
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     cat /root/.cache/uv/test.txt
+COPY delta_sharing_check.py .
