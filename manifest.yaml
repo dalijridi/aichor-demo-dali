@@ -1,37 +1,19 @@
-kind: AIchorManifest
-apiVersion: 0.2.2
-
+kind: "AIchorManifest"
+apiVersion: "0.2.3"
 builder:
-  image: image
-  dockerfile: ./Dockerfile 
-  context: .
-
+  image: "delta-sharing-check"
+  dockerfile: "./Dockerfile"
+  context: "."
 spec:
-  operator: kuberay
-  image: image
-  command: "python3 -u main.py --operator=kuberay --sleep=3000 --tb-write=True"
-
-  debug:
-    jupyter: false
-
-  tensorboard:
-    enabled: true
-
+  operator: "jobset"
+  image: "delta-sharing-check"
+  command: "python delta_sharing_check.py"
+  timeout: "30m"
   types:
-    Head:
+    master:
+      count: 1
+      completions: 1
+      parallelisms: 1
       resources:
-        cpus: 1
-        ramRatio: 2
-
-    Workers:
-      - name: cpu-workers
-        count: 1
-        resources:
-          cpus: 1
-          ramRatio: 2
-          shmSizeGB: 0
-          #accelerators: # optional
-            #gpu:
-              #count: 0
-              #type: gpu
-              #product: nvidia-tesla-t4
+        cpus: 2
+        memory: 8
