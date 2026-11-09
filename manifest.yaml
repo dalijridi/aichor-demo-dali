@@ -15,5 +15,5 @@ spec:
       completions: 1
       parallelisms: 1
       resources:
-        cpus: 2
-        memory: 8
+        cpus: 1
+        memory: 4
