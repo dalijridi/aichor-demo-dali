@@ -7,13 +7,13 @@ builder:
 spec:
   operator: "jobset"
   image: "delta-sharing-check"
-  command: "python delta_sharing_check.py"
-  timeout: "30m"
+  command: "python validate_share.py"
+  timeout: "60m"
   types:
     master:
       count: 1
       completions: 1
       parallelisms: 1
       resources:
-        cpus: 1
-        memory: 4
+        cpus: 4
+        memory: 32
